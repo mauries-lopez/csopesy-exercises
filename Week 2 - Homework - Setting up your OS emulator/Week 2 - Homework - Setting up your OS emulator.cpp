@@ -45,7 +45,9 @@ static void command_ReportUtil(string commandInput) {
 
 static void command_Clear(string commandInput) {
     cout << commandInput + " command recognized. Doing something.\n";
-    system("clear");
+    if (system("clear"))
+        system("cls");
+
     asciiPrint();
 }
 
