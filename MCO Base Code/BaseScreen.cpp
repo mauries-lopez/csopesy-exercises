@@ -40,6 +40,6 @@ void BaseScreen::printProcessInfo() const {
     std::cerr << "Current Line of Instruction: " + std::to_string(this->attachedProcess->currLineOfInstruction) + '/' + std::to_string(this->attachedProcess->totalLineOfInstruction) << std::endl;
     
     //(HH/DD/YYYY,HH:MM:SS AM/PM)
-    std::cerr << "Created: " << std::endl;
+    std::cerr << "Created: " + this->attachedProcess->timeCreated << std::endl;
 }
 

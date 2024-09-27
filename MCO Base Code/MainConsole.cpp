@@ -3,6 +3,7 @@
 #include "MainConsole.h"
 #include "ConsoleManager.h"
 #include <sstream>
+#include <ctime>
 
 using namespace std; //To not specify the prefix (std::<syntax>)
 
@@ -53,8 +54,18 @@ void MainConsole::process() {
             // Assuming a default process ID and capacity for demonstration
             int processID = 1; // This could be generated dynamically
 
+            // Get current time
+            time_t currTime;
+            char timeCreation[50];
+            struct tm datetime;
+            time(&currTime);
+            localtime_s(&datetime, &currTime);
+            strftime(timeCreation, 50, "%m\/%d\/%G, %r", &datetime);
+
+            string timeCreated = (string)timeCreation;
+
             // Create a new process and associated BaseScreen
-            shared_ptr<Process> process = make_shared<Process>(processName, processID, 100);
+            shared_ptr<Process> process = make_shared<Process>(processName, processID, 100, timeCreated);
             shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
 
             ConsoleManager::getInstance()->registerScreen(baseScreen);

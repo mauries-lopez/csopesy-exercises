@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Personal Files\\DLSU 4thYR 1st Term\\CSOPESY\\CODING EXERCISES\\Week 3 - Homework - Designing console layouts\\Continue\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{ED10CD95-AA9F-43B3-A8CD-5416B0EDA103}|Week 3 - Homework - Design Console Layout.vcxproj|C:\\Personal Files\\DLSU 4thYR 1st Term\\CSOPESY\\CODING EXERCISES\\Week 3 - Homework - Designing console layouts\\Continue\\Week 3 - Homework - Design Console Layout.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{ED10CD95-AA9F-43B3-A8CD-5416B0EDA103}|Week 3 - Homework - Design Console Layout.vcxproj|solutionrelative:Week 3 - Homework - Design Console Layout.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Week 3 - Homework - Design Console Layout.cpp",
+              "DocumentMoniker": "C:\\Personal Files\\DLSU 4thYR 1st Term\\CSOPESY\\CODING EXERCISES\\Week 3 - Homework - Designing console layouts\\Continue\\Week 3 - Homework - Design Console Layout.cpp",
+              "RelativeDocumentMoniker": "Week 3 - Homework - Design Console Layout.cpp",
+              "ToolTip": "C:\\Personal Files\\DLSU 4thYR 1st Term\\CSOPESY\\CODING EXERCISES\\Week 3 - Homework - Designing console layouts\\Continue\\Week 3 - Homework - Design Console Layout.cpp",
+              "RelativeToolTip": "Week 3 - Homework - Design Console Layout.cpp",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAEoAAABOAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-09-21T11:15:53.889Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
