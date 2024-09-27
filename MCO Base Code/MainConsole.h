@@ -11,4 +11,7 @@ public:
 	void display() override;
 	void process() override;
 	void onEnabled() override;
+
+private:
+	bool refresh;
 };

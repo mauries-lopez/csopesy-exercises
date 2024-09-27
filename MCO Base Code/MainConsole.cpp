@@ -7,6 +7,8 @@
 
 using namespace std; //To not specify the prefix (std::<syntax>)
 
+int processID = 0; // This could be generated dynamically
+
 void asciiPrint() {
     string asciiText[6] = { "  _____  _____  ____  _____  ______  _______     __",
                             " / ____|/ ____|/ __ \\|  __ \\|  ____|/ ____\\ \\   / /",
@@ -24,16 +26,23 @@ MainConsole::MainConsole(String name) : AConsole(name) {}
 
 MainConsole::~MainConsole() {}
 
-void MainConsole::onEnabled() {}
+void MainConsole::onEnabled() {
+    this->refresh = false;
+}
 
 void MainConsole::display() {
-    asciiPrint();
+    
 }
 
 void MainConsole::process() {
 
+    if (this->refresh == false) {
+        asciiPrint();
+        this->refresh = true;
+    }
+
     string main_CommandInput = "";
-    string validCommands[7] = { "initialize", "screen", "scheduler-test", "scheduler-stop", "report-util", "clear", "exit" };
+    //string validCommands[7] = { "initialize", "screen", "scheduler-test", "scheduler-stop", "report-util", "clear", "exit" };
 
     //// Initialize a vector to hold active screens
     vector<shared_ptr<BaseScreen>> activeScreens;
@@ -45,38 +54,44 @@ void MainConsole::process() {
     // Extract command into tokens
     istringstream stream(main_CommandInput);
     string command, prefix, processName;
-    stream >> command; // Read the command, e.g., "screen"
+    stream >> command >> prefix >> processName;
 
     // Check for specific command formats
     if (command == "screen") {
-        stream >> prefix >> processName; // Read the prefix and process name
-        if (prefix == "-s" && !processName.empty()) {
-            // Assuming a default process ID and capacity for demonstration
-            int processID = 1; // This could be generated dynamically
 
+        if (prefix == "-s" && !processName.empty()) {
             // Get current time
             time_t currTime;
             char timeCreation[50];
             struct tm datetime;
             time(&currTime);
             localtime_s(&datetime, &currTime);
-            strftime(timeCreation, 50, "%m\/%d\/%G, %r", &datetime);
+            strftime(timeCreation, 50, "%m/%d/%G, %r", &datetime);
 
             string timeCreated = (string)timeCreation;
 
             // Create a new process and associated BaseScreen
-            shared_ptr<Process> process = make_shared<Process>(processName, processID, 100, timeCreated);
+            shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
             shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
 
-            ConsoleManager::getInstance()->registerScreen(baseScreen);
-            ConsoleManager::getInstance()->switchConsole(processName);
+            bool isScreenAvailable = ConsoleManager::getInstance()->registerScreen(baseScreen);
 
-            // Add the new BaseScreen to the active screens list
-            activeScreens.push_back(baseScreen);
+            if (isScreenAvailable == true) {
+                ConsoleManager::getInstance()->switchConsole(processName);
+
+                // Add the new BaseScreen to the active screens list
+                activeScreens.push_back(baseScreen);
+            }
         }
-        else{
-                cout << "Invalid usage. Use: screen -s <process_name>" << endl;
+
+        if (prefix == "-r" && !processName.empty()) {
+            ConsoleManager::getInstance()->switchConsole(processName);
         }
+
+        if (prefix == "-ls") {
+            
+        }
+
     }
     else if (command == "exit") {
         ConsoleManager::getInstance()->exitApplication();

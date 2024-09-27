@@ -7,36 +7,33 @@ BaseScreen::BaseScreen(std::shared_ptr<Process> process, String processName) : A
 }
 
 void BaseScreen::onEnabled() {
-    this->refresh = true;
+    this->refresh = false;
 }
 
 void BaseScreen::process() {
-    if (this->refresh == true) {
-        String command = "";
-        std::cout << "@BaseScreen->: ";
-        getline(std::cin, command);
 
-        if (command == "exit") {
-            ConsoleManager::getInstance()->switchToScreen(MAIN_CONSOLE);
-        }
-        else {
-            //Fix this in the future
-            //This will clear the screen for all invalid commands.
-            system("cls");
-        }
+    if (this->refresh == false) {
+        printProcessInfo();
+        this->refresh = true;
+    }
+
+    String command = "";
+    std::cout << "@BaseScreen->: ";
+    getline(std::cin, command);
+
+    if (command == "exit") {
+        ConsoleManager::getInstance()->switchToScreen(MAIN_CONSOLE);
     }
     else {
-        std::cerr << "Not enabled. Process Name: " + this->attachedProcess->processName << std::endl;
+        std::cerr << "Invalid Command." << std::endl;
     }
-
 }
 
-void BaseScreen::display() {
-    printProcessInfo();
-}
+void BaseScreen::display() {}
 
 void BaseScreen::printProcessInfo() const {
     std::cerr << "Process Name: " + this->attachedProcess->processName << std::endl;
+    std::cerr << "ID: " + std::to_string(this->attachedProcess->processID) << std::endl;
     std::cerr << "Current Line of Instruction: " + std::to_string(this->attachedProcess->currLineOfInstruction) + '/' + std::to_string(this->attachedProcess->totalLineOfInstruction) << std::endl;
     
     //(HH/DD/YYYY,HH:MM:SS AM/PM)

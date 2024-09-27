@@ -47,13 +47,14 @@ void ConsoleManager::switchConsole(String consoleName) {
 	}
 }
 
-void ConsoleManager::registerScreen(std::shared_ptr<BaseScreen> screenRef) {
+bool ConsoleManager::registerScreen(std::shared_ptr<BaseScreen> screenRef) {
 	if (this->consoleTable.contains(screenRef->getName())) {
 		std::cerr << "Screen name " << screenRef->getName() << " already exists. Please use a different name." << std::endl;
-		return;
+		return false;
 	}
 
 	this->consoleTable[screenRef->getName()] = screenRef;
+	return true;
 }
 
 void ConsoleManager::switchToScreen(String screenName) {
