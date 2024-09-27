@@ -70,6 +70,14 @@ void ConsoleManager::switchToScreen(String screenName) {
 	}
 }
 
+void ConsoleManager::nullProcessName() {
+	std::cerr << "You did not enter a process name. Enter a Screen Name." << std::endl;
+}
+
+void ConsoleManager::invalidPrefix() {
+	std::cerr << "Invalid prefix. Use \'-s\' to start a new screen or \'-r\' to reattach an existing screen." << std::endl;
+}
+
 void ConsoleManager::unregisterScreen(String screenName) {
 	if (this->consoleTable.contains(screenName)) {
 		this->consoleTable.erase(screenName);

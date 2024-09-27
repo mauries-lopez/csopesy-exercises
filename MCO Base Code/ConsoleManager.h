@@ -31,6 +31,8 @@ public:
 
 	bool registerScreen(std::shared_ptr<BaseScreen> screenRef);
 	void switchToScreen(String screenName);
+	void nullProcessName();
+	void invalidPrefix();
 	void unregisterScreen(String screenName);
 
 	void returnToPreviousConsole();
