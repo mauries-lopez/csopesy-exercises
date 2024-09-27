@@ -84,16 +84,20 @@ void MainConsole::process() {
             }
         }
 
-        if (prefix == "-r" && !processName.empty()) {
+        else if (prefix == "-s" && processName.empty()) {
+            ConsoleManager::getInstance()->nullProcessName();
+        }
+
+        else if (prefix == "-r" && !processName.empty()) {
             ConsoleManager::getInstance()->switchConsole(processName);
         }
 
-        if (prefix == "-ls") {
-            
-        }
-
-        if (processName.empty()) {
+        else if (prefix == "-r" && processName.empty()) {
             ConsoleManager::getInstance()->nullProcessName();
+        }
+        
+        else if (prefix == "-ls") {
+            
         }
 
         // improper prefix
