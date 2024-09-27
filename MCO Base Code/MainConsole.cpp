@@ -92,6 +92,15 @@ void MainConsole::process() {
             
         }
 
+        if (processName.empty()) {
+            ConsoleManager::getInstance()->nullProcessName();
+        }
+
+        // improper prefix
+        else {
+            ConsoleManager::getInstance()->invalidPrefix();
+        }
+
     }
     else if (command == "exit") {
         ConsoleManager::getInstance()->exitApplication();
