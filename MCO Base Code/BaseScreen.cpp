@@ -32,11 +32,13 @@ void BaseScreen::process() {
 void BaseScreen::display() {}
 
 void BaseScreen::printProcessInfo() const {
-    std::cerr << "Process Name: " + this->attachedProcess->processName << std::endl;
-    std::cerr << "ID: " + std::to_string(this->attachedProcess->processID) << std::endl;
-    std::cerr << "Current Line of Instruction: " + std::to_string(this->attachedProcess->currLineOfInstruction) + '/' + std::to_string(this->attachedProcess->totalLineOfInstruction) << std::endl;
-    
+    std::cerr << "Process Name: " + this->attachedProcess->getName() << std::endl; 
+    std::cerr << "ID: " + std::to_string(this->attachedProcess->getID()) << std::endl; 
+    std::cerr << "Current Line of Instruction: "
+        << this->attachedProcess->getCurrentLine() << '/'
+        << this->attachedProcess->getTotalLines() << std::endl; 
+
     //(HH/DD/YYYY,HH:MM:SS AM/PM)
-    std::cerr << "Created: " + this->attachedProcess->timeCreated << std::endl;
+    std::cerr << "Created: " + this->attachedProcess->getTimeCreated() << std::endl; 
 }
 
