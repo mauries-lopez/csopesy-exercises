@@ -108,6 +108,25 @@ bool ConsoleManager::isRunning() const {
 	return this->running;
 }
 
+void ConsoleManager::addFinishedProcess(std::shared_ptr<Process> process) {
+	finishedProcesses.push_back(process);
+}
+
+void ConsoleManager::listFinishedProcesses() {
+	if (finishedProcesses.empty()) {
+		std::cout << "No finished processes." << std::endl;
+		return;
+	}
+
+	std::cout << "Finished Processes:" << std::endl;
+	for (const auto& process : finishedProcesses) {
+		std::cout << "Process Name: " << process->getName()
+			<< ", Process ID: " << process->getID()
+			<< ", Finished: " << (process->isFinished() ? "Yes" : "No")
+			<< std::endl;
+	}
+}
+
 ConsoleManager::ConsoleManager() {
 
 	this->running = true;

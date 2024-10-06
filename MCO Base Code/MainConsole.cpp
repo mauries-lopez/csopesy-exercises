@@ -56,6 +56,12 @@ void MainConsole::process() {
     string command, prefix, processName;
     stream >> command >> prefix >> processName;
 
+    // Extract processName if it exists
+    if (stream) {
+        getline(stream, processName); // Capture the remaining string as processName
+        processName = processName.substr(1); // Remove leading space
+    }
+
     // Check for specific command formats
     if (command == "screen") {
 
@@ -97,8 +103,8 @@ void MainConsole::process() {
         }
         
         else if (prefix == "-ls") {
-            
-        }
+            ConsoleManager::getInstance()->listFinishedProcesses();
+        } 
 
         // improper prefix
         else {
