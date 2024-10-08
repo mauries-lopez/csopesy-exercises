@@ -4,6 +4,7 @@
 #include "ConsoleManager.h"
 #include <sstream>
 #include <ctime>
+#include <thread>
 
 using namespace std; //To not specify the prefix (std::<syntax>)
 
@@ -41,6 +42,8 @@ void MainConsole::process() {
         this->refresh = true;
     }
 
+    // Create 10 processes, each with 100 print commands, upon the start of your OS emulator.
+
     string main_CommandInput = "";
     //string validCommands[7] = { "initialize", "screen", "scheduler-test", "scheduler-stop", "report-util", "clear", "exit" };
 
@@ -55,6 +58,13 @@ void MainConsole::process() {
     istringstream stream(main_CommandInput);
     string command, prefix, processName;
     stream >> command >> prefix >> processName;
+
+    // Extract processName if it exists
+    //if (stream) {
+    //    getline(stream, processName); // Capture the remaining string as processName
+    //    //processName = processName.substr(1); // Remove leading space
+    //}
+    // ^^^ Line 60 to 63 was commented out on 08-10-2024 due to it making the process name incomplete (e.g. missing first letter). Better to implement removing spaces in the middle of process name
 
     // Check for specific command formats
     if (command == "screen") {
@@ -97,8 +107,8 @@ void MainConsole::process() {
         }
         
         else if (prefix == "-ls") {
-            
-        }
+            ConsoleManager::getInstance()->listFinishedProcesses();
+        } 
 
         // improper prefix
         else {

@@ -38,6 +38,8 @@ public:
 	void returnToPreviousConsole();
 	void exitApplication();
 	bool isRunning() const;
+	void addFinishedProcess(std::shared_ptr<Process> process);
+	void listFinishedProcesses();
 
 	HANDLE getConsoleHandle() const;
 
@@ -53,6 +55,7 @@ private:
 	ConsoleTable consoleTable;
 	std::shared_ptr<AConsole> currentConsole;
 	std::shared_ptr<AConsole> previousConsole;
+	std::vector<std::shared_ptr<Process>> finishedProcesses; 
 
 	HANDLE consoleHandle;
 	bool running = true;

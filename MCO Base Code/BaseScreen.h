@@ -12,6 +12,7 @@ public:
 	void display() override;
 
 private:
+	void baseScreenInput();
 	void printProcessInfo() const;
 	std::shared_ptr<Process> attachedProcess;
 	bool refresh = false;

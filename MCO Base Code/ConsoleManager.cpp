@@ -2,6 +2,7 @@
 #include "MainConsole.h"
 #include <iostream>
 #include "BaseScreen.h"
+#include <thread>
 
 ConsoleManager* ConsoleManager::sharedInstance = nullptr;
 ConsoleManager* ConsoleManager::getInstance() {
@@ -108,6 +109,25 @@ bool ConsoleManager::isRunning() const {
 	return this->running;
 }
 
+void ConsoleManager::addFinishedProcess(std::shared_ptr<Process> process) {
+	finishedProcesses.push_back(process);
+}
+
+void ConsoleManager::listFinishedProcesses() {
+	if (finishedProcesses.empty()) {
+		std::cout << "No finished processes." << std::endl;
+		return;
+	}
+
+	std::cout << "Finished Processes:" << std::endl;
+	for (const auto& process : finishedProcesses) {
+		std::cout << "Process Name: " << process->getName()
+			<< ", Process ID: " << process->getID()
+			<< ", Finished: " << (process->isFinished() ? "Yes" : "No")
+			<< std::endl;
+	}
+}
+
 ConsoleManager::ConsoleManager() {
 
 	this->running = true;
@@ -116,6 +136,7 @@ ConsoleManager::ConsoleManager() {
 	this->consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	const std::shared_ptr<MainConsole> mainConsole = std::make_shared<MainConsole>(MAIN_CONSOLE);
+	//std::thread mainConsoleThread 
 
 	this->consoleTable[MAIN_CONSOLE] = mainConsole;
 
