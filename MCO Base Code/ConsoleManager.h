@@ -29,7 +29,7 @@ public:
 	void process() const;
 	void switchConsole(String consoleName);
 
-	bool registerScreen(std::shared_ptr<BaseScreen> screenRef);
+	void registerScreen(std::shared_ptr<BaseScreen> screenRef);
 	void switchToScreen(String screenName);
 	void nullProcessName();
 	void invalidPrefix();
@@ -38,7 +38,8 @@ public:
 	void returnToPreviousConsole();
 	void exitApplication();
 	bool isRunning() const;
-	void addFinishedProcess(std::shared_ptr<Process> process);
+	void addFinishedProcess(Process* process);
+	std::vector<Process*> finishedProcesses;
 	void listFinishedProcesses();
 
 	HANDLE getConsoleHandle() const;
@@ -55,7 +56,6 @@ private:
 	ConsoleTable consoleTable;
 	std::shared_ptr<AConsole> currentConsole;
 	std::shared_ptr<AConsole> previousConsole;
-	std::vector<std::shared_ptr<Process>> finishedProcesses; 
 
 	HANDLE consoleHandle;
 	bool running = true;

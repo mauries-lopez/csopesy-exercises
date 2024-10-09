@@ -2,6 +2,7 @@
 #include "MainConsole.h"
 #include <iostream>
 #include "BaseScreen.h"
+#include "Process.h"
 #include <thread>
 
 ConsoleManager* ConsoleManager::sharedInstance = nullptr;
@@ -48,14 +49,12 @@ void ConsoleManager::switchConsole(String consoleName) {
 	}
 }
 
-bool ConsoleManager::registerScreen(std::shared_ptr<BaseScreen> screenRef) {
+void ConsoleManager::registerScreen(std::shared_ptr<BaseScreen> screenRef) {
 	if (this->consoleTable.contains(screenRef->getName())) {
 		std::cerr << "Screen name " << screenRef->getName() << " already exists. Please use a different name." << std::endl;
-		return false;
 	}
 
 	this->consoleTable[screenRef->getName()] = screenRef;
-	return true;
 }
 
 void ConsoleManager::switchToScreen(String screenName) {
@@ -109,15 +108,24 @@ bool ConsoleManager::isRunning() const {
 	return this->running;
 }
 
-void ConsoleManager::addFinishedProcess(std::shared_ptr<Process> process) {
+void ConsoleManager::addFinishedProcess(Process* process) {
 	finishedProcesses.push_back(process);
 }
 
 void ConsoleManager::listFinishedProcesses() {
-	if (finishedProcesses.empty()) {
+	/*if (finishedProcesses.empty()) {
 		std::cout << "No finished processes." << std::endl;
 		return;
-	}
+	}*/
+
+	/*std::vector<Process*> unfinishedProcessesList = ProcessunfinishedProcessList;
+	std::cout << "Unfinished Processes:" << std::endl;
+	for (const auto& process : unfinishedProcessesList) {
+		std::cout << "Process Name: " << process->getName()
+			<< ", Process ID: " << process->getID()
+			<< ", UnFinished: " << (process->isFinished() ? "Yes" : "No")
+			<< std::endl;
+	}*/
 
 	std::cout << "Finished Processes:" << std::endl;
 	for (const auto& process : finishedProcesses) {
@@ -136,7 +144,6 @@ ConsoleManager::ConsoleManager() {
 	this->consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	const std::shared_ptr<MainConsole> mainConsole = std::make_shared<MainConsole>(MAIN_CONSOLE);
-	//std::thread mainConsoleThread 
 
 	this->consoleTable[MAIN_CONSOLE] = mainConsole;
 

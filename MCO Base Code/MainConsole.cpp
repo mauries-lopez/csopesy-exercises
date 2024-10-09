@@ -2,6 +2,7 @@
 #include "TypedefRepo.h"
 #include "MainConsole.h"
 #include "ConsoleManager.h"
+#include "ScheduleWorker.h"
 #include <sstream>
 #include <ctime>
 #include <thread>
@@ -9,6 +10,7 @@
 using namespace std; //To not specify the prefix (std::<syntax>)
 
 int processID = 0; // This could be generated dynamically
+std::vector <std::string> processesNameList;
 
 void asciiPrint() {
     string asciiText[6] = { "  _____  _____  ____  _____  ______  _______     __",
@@ -43,6 +45,13 @@ void MainConsole::process() {
     }
 
     // Create 10 processes, each with 100 print commands, upon the start of your OS emulator.
+
+
+
+
+
+
+
 
     string main_CommandInput = "";
     //string validCommands[7] = { "initialize", "screen", "scheduler-test", "scheduler-stop", "report-util", "clear", "exit" };
@@ -80,18 +89,35 @@ void MainConsole::process() {
 
             string timeCreated = (string)timeCreation;
 
-            // Create a new process and associated BaseScreen
-            shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
-            shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
+            // Line 84 to 90: This is used for PRE-DETERMINING if the process name is already initialized or not.
+            // This is to avoid the unnecessary creation of process.
+            bool isProcessNameAvailable = true;
+            for (int i = 0; i < processesNameList.size(); i++) {
+                if (processName == processesNameList[i]) {
+                    isProcessNameAvailable = false;
+                }
+            }
 
-            bool isScreenAvailable = ConsoleManager::getInstance()->registerScreen(baseScreen);
+            if (isProcessNameAvailable) {
+                processesNameList.push_back(processName);
 
-            if (isScreenAvailable == true) {
+                shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
+                shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
+                ConsoleManager::getInstance()->registerScreen(baseScreen);
+
+                ScheduleWorker scheduleWorker;
+                scheduleWorker.addProcess(process);
+
+                scheduleWorker.executeProcess();
+
                 ConsoleManager::getInstance()->switchConsole(processName);
 
-                // Add the new BaseScreen to the active screens list
                 activeScreens.push_back(baseScreen);
             }
+            else {
+                std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
+            }
+            
         }
 
         else if (prefix == "-s" && processName.empty()) {
