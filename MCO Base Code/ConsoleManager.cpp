@@ -109,25 +109,29 @@ bool ConsoleManager::isRunning() const {
 }
 
 void ConsoleManager::addFinishedProcess(Process* process) {
+	
+	for (int i = 0; i < unfinishedProcessList.size(); i++) {
+		if (unfinishedProcessList[i] == process) {
+			//Remove the process
+			unfinishedProcessList.erase(unfinishedProcessList.begin() + i);
+		}
+	}
+
 	finishedProcesses.push_back(process);
 }
 
 void ConsoleManager::listFinishedProcesses() {
-	/*if (finishedProcesses.empty()) {
-		std::cout << "No finished processes." << std::endl;
-		return;
-	}*/
-
-	/*std::vector<Process*> unfinishedProcessesList = ProcessunfinishedProcessList;
-	std::cout << "Unfinished Processes:" << std::endl;
-	for (const auto& process : unfinishedProcessesList) {
+	std::cout << "[Unfinished Processes:]" << std::endl;
+	for (const auto& process : unfinishedProcessList) {
 		std::cout << "Process Name: " << process->getName()
 			<< ", Process ID: " << process->getID()
-			<< ", UnFinished: " << (process->isFinished() ? "Yes" : "No")
+			<< ", Unfinished: " << (process->isFinished() ? "Yes" : "No")
 			<< std::endl;
-	}*/
+	}
 
-	std::cout << "Finished Processes:" << std::endl;
+	std::cout << "\n\n";
+
+	std::cout << "[Finished Processes:]" << std::endl;
 	for (const auto& process : finishedProcesses) {
 		std::cout << "Process Name: " << process->getName()
 			<< ", Process ID: " << process->getID()

@@ -29,9 +29,6 @@ public:
     std::string getTimeCreated() const { return timeCreated; }
     std::string processName;
 
-    // Container for all the processes
-    std::vector<Process*> unfinishedProcessList;
-
 private:
    // std::string processName;          // Name of the process
     std::mutex mtx;                     // Mutex for thread safety

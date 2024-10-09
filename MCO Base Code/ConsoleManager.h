@@ -39,6 +39,7 @@ public:
 	void exitApplication();
 	bool isRunning() const;
 	void addFinishedProcess(Process* process);
+	std::vector<Process*> unfinishedProcessList;
 	std::vector<Process*> finishedProcesses;
 	void listFinishedProcesses();
 
