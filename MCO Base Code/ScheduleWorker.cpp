@@ -2,6 +2,9 @@
 #include "Process.h"
 #include <iostream>
 
+// Initialize cores
+int cores[4] = {-1,-1,-1,-1}; // array of cores size 4, each initialized as -1 (free; set to 1 if in use)
+
 ScheduleWorker::ScheduleWorker() {
 
 }
@@ -19,24 +22,22 @@ void ScheduleWorker::executeProcess() {
 
     //First-Come First Serve Algorithm
     // Execute schedulerQueue by getting the first who entered the processList.
-    while (true) {
-        /*for (size_t index : cores) {
-            if(coreList[index])
-        }*/
+    //while (true) {
+        for (int index : cores) {
+            if (cores[index] == -1) { // Free, core can be used
+                cores[index] = 1; // set core to In Use
+                // Start the process
+                // call incrementLine from Process class here
+                std::thread processIncrementLine(&Process::incrementLine, processList[0]);  //Start the Process
+                processIncrementLine.detach(); //Separate the thread of the process.
 
-        // if core 0 is empty, get and execute the process at the top of the queue of processList
-        std::thread processIncrementLine(&Process::incrementLine, processList[0]);  //Start the Process
-        processIncrementLine.detach(); //Separate the thread of the process.
-
-        // if core 1 is empty, get and execute the process at the top of the queue of processList
-
-        // if core 2 is empty, get and execute the process at the top of the queue of processList
-
-        // if core 3 is empty, get and execute the process at the top of the queue of processList
-
-    }
-   
-    
+                // Check if process in cores[index] is finished
+                //if (this->currLineOfInstruction == 100) {
+                    cores[index] = -1;
+                //}
+            }
+        }
+    //}
 }
 
 void ScheduleWorker::displaySchedule() const {
