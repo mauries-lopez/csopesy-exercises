@@ -28,11 +28,12 @@ void Process::incrementLine() {
         std::string log = "Hello World from " + processName; // Create Print Statement
         printLogs.push_back(log); // Put print statement to printLogs
         this->currLineOfInstruction = i;
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     if (this->isFinished()) {
         ConsoleManager::getInstance()->addFinishedProcess(this);
+        //scheduleWorker->removeFinishedProcess();
     }
     
 }
