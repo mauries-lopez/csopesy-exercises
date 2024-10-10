@@ -99,10 +99,10 @@ void MainConsole::process() {
                 shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
                 ConsoleManager::getInstance()->registerScreen(baseScreen);
 
-                ScheduleWorker scheduleWorker;
-                scheduleWorker.addProcess(process);
+                ScheduleWorker::addProcess(process);
 
-                scheduleWorker.executeProcess();
+                //std::thread baseScreenInputThread(&ScheduleWorker::executeProcess, &scheduleWorker);
+                ////scheduleWorker.executeProcess();
 
                 ConsoleManager::getInstance()->switchConsole(processName);
 
