@@ -14,6 +14,10 @@ public:
 
     std::vector<std::shared_ptr<Process>> schedulerQueue;
 
+    size_t cores = 4;
+    // cores list
+    std::shared_ptr<Process> coreList[4];
+
 private:
     std::vector<std::shared_ptr<Process>> processList;
 };

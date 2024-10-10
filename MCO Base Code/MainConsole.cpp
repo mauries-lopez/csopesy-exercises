@@ -47,12 +47,6 @@ void MainConsole::process() {
     // Create 10 processes, each with 100 print commands, upon the start of your OS emulator.
 
 
-
-
-
-
-
-
     string main_CommandInput = "";
     //string validCommands[7] = { "initialize", "screen", "scheduler-test", "scheduler-stop", "report-util", "clear", "exit" };
 
