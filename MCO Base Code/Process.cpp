@@ -1,7 +1,6 @@
 #include "Process.h"
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
-#include "ScheduleWorker.h"
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -45,16 +44,6 @@ void Process::incrementLine(int core) {
     }
 
     if (this->isFinished()) {
-        
-        // If process is finish, let core be available again
-        // Find any 1 within the cores then make it available again.
-        for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
-            if (ScheduleWorker::cores[i] == 1) {
-                ScheduleWorker::cores[i] = -1;
-                break;
-            }
-        }
-
         ConsoleManager::getInstance()->addFinishedProcess(this);
     }
     

@@ -9,8 +9,6 @@ using namespace std; //To not specify the prefix (std::<syntax>)
 int main()
 {
     ConsoleManager::initialize();
-    ScheduleWorker scheduleWorker;
-    scheduleWorker.initialize(4);
 
     bool running = true;
 
