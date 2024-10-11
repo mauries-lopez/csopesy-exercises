@@ -52,12 +52,17 @@ void ScheduleWorker::scheduleProcess() {
             if (cores[i] == -1) { // Found available core
                 // Assign core to process
                 coreAssigned = i;
+                // Associate core to currently executed process
                 //Start the Process
-                std::thread processIncrementLine(&Process::incrementLine, processList.front());
+                std::thread processIncrementLine(&Process::incrementLine, processList.front(), coreAssigned);
                 //Separate the thread of the process.
                 processIncrementLine.detach();
                 //Remove the current process in processList <-- processList should be empty again 
                 processList.erase(processList.begin());
+                // Add to processList the process at the top of waitingQueue
+                if (!waitingQueue.empty()) {
+                    processList.push_back(waitingQueue.front());
+                }
                 //Set core to busy
                 cores[i] = 1;
             }

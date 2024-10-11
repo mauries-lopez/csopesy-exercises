@@ -18,7 +18,7 @@ public:
     }
 
     // Method to increment the current line of instruction
-    void incrementLine();
+    void incrementLine(int core);
     
     // Getters
     std::string getName() const { return processName; }
