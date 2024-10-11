@@ -1,6 +1,7 @@
 #include "Process.h"
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
+#include "ScheduleWorker.h"
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -28,12 +29,21 @@ void Process::incrementLine() {
         std::string log = "Hello World from " + processName; // Create Print Statement
         printLogs.push_back(log); // Put print statement to printLogs
         this->currLineOfInstruction = i;
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     if (this->isFinished()) {
+        
+        // If process is finish, let core be available again
+        // Find any 1 within the cores then make it available again.
+        for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
+            if (ScheduleWorker::cores[i] == 1) {
+                ScheduleWorker::cores[i] = -1;
+                break;
+            }
+        }
+
         ConsoleManager::getInstance()->addFinishedProcess(this);
-        //scheduleWorker->removeFinishedProcess();
     }
     
 }

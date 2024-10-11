@@ -15,10 +15,11 @@ public:
     void displaySchedule() const;
 
     std::vector<std::shared_ptr<Process>> schedulerQueue;
+    static std::vector<int> cores;
+
    
 private:
     std::mutex mtx;
-    std::vector<int> cores;
     void initializeCores(int numCores);
     static std::vector<std::shared_ptr<Process>> processList;
 };
