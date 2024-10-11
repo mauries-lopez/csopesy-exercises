@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <deque>
 #include "Process.h" 
 
 class ScheduleWorker {
@@ -18,10 +19,10 @@ public:
     static std::vector<int> cores;
     int coreAssigned;
 
+   
 private:
     std::mutex mtx;
     void initializeCores(int numCores);
     static std::vector<std::shared_ptr<Process>> processList;
     static std::vector<std::shared_ptr<Process>> waitingQueue;
 };
-

@@ -136,12 +136,6 @@ void MainConsole::process() {
     processesNameList.push_back("process9");
     processesNameList.push_back("process10");*/
 
-
-
-
-
-
-
     string main_CommandInput = "";
     //string validCommands[7] = { "initialize", "screen", "scheduler-test", "scheduler-stop", "report-util", "clear", "exit" };
 
@@ -161,43 +155,60 @@ void MainConsole::process() {
     if (command == "screen") {
 
         if (prefix == "-s" && !processName.empty()) {
-            // Get current time
-            time_t currTime;
-            char timeCreation[50];
-            struct tm datetime;
-            time(&currTime);
-            localtime_s(&datetime, &currTime);
-            strftime(timeCreation, 50, "%m/%d/%G, %r", &datetime);
 
-            string timeCreated = (string)timeCreation;
-
-            // Line 84 to 90: This is used for PRE-DETERMINING if the process name is already initialized or not.
-            // This is to avoid the unnecessary creation of process.
-            bool isProcessNameAvailable = true;
-            for (int i = 0; i < processesNameList.size(); i++) {
-                if (processName == processesNameList[i]) {
-                    isProcessNameAvailable = false;
+            //If there are any available cores, proceed. Else, error.
+            //Check if there are any available cores
+            for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
+                if (ScheduleWorker::cores[i] == -1) {
+                    anyAvailableCore = true;
+                    break;
+                }
+                else {
+                    anyAvailableCore = false;
                 }
             }
 
-            if (isProcessNameAvailable) {
-                processesNameList.push_back(processName);
+            if (anyAvailableCore == true) {
+                // Get current time
+                time_t currTime;
+                char timeCreation[50];
+                struct tm datetime;
+                time(&currTime);
+                localtime_s(&datetime, &currTime);
+                strftime(timeCreation, 50, "%m/%d/%G, %r", &datetime);
 
-                shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
-                shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
-                ConsoleManager::getInstance()->registerScreen(baseScreen);
+                string timeCreated = (string)timeCreation;
 
-                ScheduleWorker scheduleWorker;
-                scheduleWorker.addProcess(process);
+                // Line 84 to 90: This is used for PRE-DETERMINING if the process name is already initialized or not.
+                // This is to avoid the unnecessary creation of process.
+                bool isProcessNameAvailable = true;
+                for (int i = 0; i < processesNameList.size(); i++) {
+                    if (processName == processesNameList[i]) {
+                        isProcessNameAvailable = false;
+                    }
+                }
 
-                scheduleWorker.executeProcess();
+                if (isProcessNameAvailable) {
+                    processesNameList.push_back(processName);
 
-                ConsoleManager::getInstance()->switchConsole(processName);
+                    shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
+                    shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
+                    ConsoleManager::getInstance()->registerScreen(baseScreen);
 
-                activeScreens.push_back(baseScreen);
+                    ScheduleWorker::addProcess(process);
+
+                    //std::thread baseScreenInputThread(&ScheduleWorker::executeProcess, &scheduleWorker);
+                    ////scheduleWorker.executeProcess();
+
+                    ConsoleManager::getInstance()->switchConsole(processName);
+
+                    activeScreens.push_back(baseScreen);
+                }
+                else {
+                    std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
+                }
             }
             else {
-
                 std::cerr << "No Available Core. Process is queued." << std::endl;
                 // Add process to waiting queue
                 // Assigning process
@@ -229,7 +240,7 @@ void MainConsole::process() {
                     std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
                 }
             }
-            
+     
         }
 
         else if (prefix == "-s" && processName.empty()) {

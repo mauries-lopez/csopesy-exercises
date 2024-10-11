@@ -19,8 +19,17 @@ ScheduleWorker::~ScheduleWorker() {
 
 }
 
+void ScheduleWorker::initialize(int numCores) {
+    this->initializeCores(numCores);
+
+    //Make a thread for the scheduler so it can constantly check for processes
+    std::thread scheduleThread(&ScheduleWorker::scheduleProcess, this);
+
+    //Detach it
+    scheduleThread.detach();
+}
+
 void ScheduleWorker::addProcess(std::shared_ptr<Process> process) {
-    
     processList.push_back(process);
 }
 
@@ -76,3 +85,11 @@ void ScheduleWorker::displaySchedule() const {
         std::cout << " - " << process->processName << std::endl;
     }
 }
+
+
+
+//void ScheduleWorker::removeFinishedProcess() {
+//    if (!processList.empty()) {
+//        processList.erase(processList.begin());
+//    }
+//}

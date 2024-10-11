@@ -30,7 +30,7 @@ public:
     std::string processName;
 
 private:
-   // std::string processName;          // Name of the process
+    //std::string processName;          // Name of the process
     std::mutex mtx;                     // Mutex for thread safety
     int processID;                      // ID of the process
     int currLineOfInstruction;          // Current line of instruction
@@ -39,4 +39,7 @@ private:
 
     // Temporary (can be deleted later on)
     std::vector<std::string> printLogs;
+
+    // Instance of ScheduleWorker
+    //ScheduleWorker* scheduleWorker;
 };
