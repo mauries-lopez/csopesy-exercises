@@ -2,6 +2,7 @@
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
 #include "ScheduleWorker.h"
+#include "FileWrite.h"
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -44,6 +45,7 @@ void Process::incrementLine() {
         }
 
         ConsoleManager::getInstance()->addFinishedProcess(this);
+        FileWrite::generateFile(processID, processName,timeCreated);
     }
     
 }

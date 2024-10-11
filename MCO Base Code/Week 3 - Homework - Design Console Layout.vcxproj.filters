@@ -22,6 +22,9 @@
     <ClCompile Include="ScheduleWorker.cpp">
       <Filter>ConsoleUI</Filter>
     </ClCompile>
+    <ClCompile Include="FileWrite.cpp">
+      <Filter>ConsoleUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ConsoleUI">
@@ -48,6 +51,9 @@
       <Filter>ConsoleUI</Filter>
     </ClInclude>
     <ClInclude Include="ScheduleWorker.h">
+      <Filter>ConsoleUI</Filter>
+    </ClInclude>
+    <ClInclude Include="FileWrite.h">
       <Filter>ConsoleUI</Filter>
     </ClInclude>
   </ItemGroup>

@@ -121,20 +121,22 @@ void ConsoleManager::addFinishedProcess(Process* process) {
 }
 
 void ConsoleManager::listFinishedProcesses() {
-	std::cout << "[Unfinished Processes:]" << std::endl;
+	std::cout << "Running Processes:" << std::endl;
 	for (const auto& process : unfinishedProcessList) {
-		std::cout << "Process Name: " << process->getName()
-			<< ", Process ID: " << process->getID()
+		std::cout << process->getName() // Directly show the process name
+			<< " (" << process->getTimeCreated() << ")"
+			<< ", Core: " << process->getID()
 			<< ", Unfinished: " << (process->isFinished() ? "Yes" : "No")
 			<< std::endl;
 	}
 
 	std::cout << "\n\n";
 
-	std::cout << "[Finished Processes:]" << std::endl;
+	std::cout << "Finished Processes:" << std::endl;
 	for (const auto& process : finishedProcesses) {
-		std::cout << "Process Name: " << process->getName()
-			<< ", Process ID: " << process->getID()
+		std::cout << process->getName() // Directly show the process name
+			<< " (" << process->getTimeCreated() << ")"
+			<< ", Core: " << process->getID()
 			<< ", Finished: " << (process->isFinished() ? "Yes" : "No")
 			<< std::endl;
 	}

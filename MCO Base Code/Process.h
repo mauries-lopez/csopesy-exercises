@@ -10,6 +10,7 @@ class Process {
 public:
     // Constructor to initialize the process with a name, ID, total lines of instruction, and time created
     Process(const std::string& name, int id, int totalLines, const std::string& timeCreated);
+
     ~Process() = default;
 
     // Method to check if the process is finished
@@ -35,6 +36,7 @@ private:
     int processID;                      // ID of the process
     int currLineOfInstruction;          // Current line of instruction
     int totalLineOfInstruction;         // Total lines of instruction
+    int coreID;
     std::string timeCreated;            // Time when the process was created
 
     // Temporary (can be deleted later on)

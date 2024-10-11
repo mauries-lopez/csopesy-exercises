@@ -132,6 +132,7 @@
   <ItemGroup>
     <ClCompile Include="BaseScreen.cpp" />
     <ClCompile Include="ConsoleManager.cpp" />
+    <ClCompile Include="FileWrite.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainConsole.cpp" />
     <ClCompile Include="AConsole.cpp" />
@@ -141,6 +142,7 @@
   <ItemGroup>
     <ClInclude Include="BaseScreen.h" />
     <ClInclude Include="ConsoleManager.h" />
+    <ClInclude Include="FileWrite.h" />
     <ClInclude Include="MainConsole.h" />
     <ClInclude Include="Process.h" />
     <ClInclude Include="AConsole.h" />
