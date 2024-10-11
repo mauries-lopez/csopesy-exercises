@@ -12,6 +12,8 @@ using namespace std; //To not specify the prefix (std::<syntax>)
 int processID = 0; // This could be generated dynamically
 std::vector <std::string> processesNameList;
 
+// Waiting queue
+
 // Core Related
 std::vector<int> ScheduleWorker::cores;
 bool anyAvailableCore = false;
@@ -132,7 +134,35 @@ void MainConsole::process() {
             }
             else {
                 std::cerr << "No Available Core. Process is queued." << std::endl;
+                // Add process to waiting queue
+                // Assigning process
+                // Get current time
+                time_t currTime;
+                char timeCreation[50];
+                struct tm datetime;
+                time(&currTime);
+                localtime_s(&datetime, &currTime);
+                strftime(timeCreation, 50, "%m/%d/%G, %r", &datetime);
 
+                string timeCreated = (string)timeCreation;
+
+                bool isProcessNameAvailable = true;
+                for (int i = 0; i < processesNameList.size(); i++) {
+                    if (processName == processesNameList[i]) {
+                        isProcessNameAvailable = false;
+                    }
+                }
+
+                if (isProcessNameAvailable) {
+                    processesNameList.push_back(processName);
+
+                    shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
+
+                    // Add process to waiting queue
+                    ScheduleWorker::addWaitProcess(process);
+                } else {
+                    std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
+                }
             }
      
         }

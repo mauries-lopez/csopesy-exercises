@@ -9,6 +9,7 @@
 //int cores[4] = {-1,-1,-1,-1}; // array of cores size 4, each initialized as -1 (free; set to 1 if in use)
 
 std::vector<std::shared_ptr<Process>> ScheduleWorker::processList;
+std::vector<std::shared_ptr<Process>> ScheduleWorker::waitingQueue;
 
 ScheduleWorker::ScheduleWorker() {
 
@@ -32,6 +33,10 @@ void ScheduleWorker::addProcess(std::shared_ptr<Process> process) {
     processList.push_back(process);
 }
 
+void ScheduleWorker::addWaitProcess(std::shared_ptr<Process> process) {
+    waitingQueue.push_back(process);
+}
+
 void ScheduleWorker::scheduleProcess() {
 
     //First-Come First Serve Algorithm
@@ -45,6 +50,8 @@ void ScheduleWorker::scheduleProcess() {
 
         if (!processList.empty()) {
             if (cores[i] == -1) { // Found available core
+                // Assign core to process
+                coreAssigned = i;
                 //Start the Process
                 std::thread processIncrementLine(&Process::incrementLine, processList.front());
                 //Separate the thread of the process.
