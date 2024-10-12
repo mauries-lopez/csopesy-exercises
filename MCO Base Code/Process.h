@@ -9,7 +9,7 @@
 class Process {
 public:
     // Constructor to initialize the process with a name, ID, total lines of instruction, and time created
-    Process(const std::string& name, int id, int totalLines, const std::string& timeCreated);
+    Process(const std::string& name, int id, int totalLines, const std::string& timeCreated, int coreAssigned = 5); // Core assignment default 5 for when no core is assigned
     ~Process() = default;
 
     // Method to check if the process is finished
@@ -27,7 +27,11 @@ public:
     int getTotalLines() const { return totalLineOfInstruction; } 
     std::vector<std::string> getPrintLogs();
     std::string getTimeCreated() const { return timeCreated; }
+    int getCoreAssigned() const { return coreAssigned; }
     std::string processName;
+
+    // Setter for core
+    void setCoreAssigned(int core) { coreAssigned = core; };
 
 private:
     //std::string processName;          // Name of the process
@@ -36,6 +40,7 @@ private:
     int currLineOfInstruction;          // Current line of instruction
     int totalLineOfInstruction;         // Total lines of instruction
     std::string timeCreated;            // Time when the process was created
+    int coreAssigned;                   // Core assigned to execution of process
 
     // Temporary (can be deleted later on)
     std::vector<std::string> printLogs;

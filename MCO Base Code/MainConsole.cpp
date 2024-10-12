@@ -62,7 +62,7 @@ void MainConsole::process() {
             struct tm datetime;
             time(&currTime);
             localtime_s(&datetime, &currTime);
-            strftime(timeCreation, 50, "%m/%d/%G, %r", &datetime);
+            strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
 
             string timeCreated = (string)timeCreation;
 
@@ -168,6 +168,14 @@ void MainConsole::process() {
                 }
             }
 
+            //// addProcess if there is available core
+            //if (anyAvailableCore) {
+            //    ScheduleWorker::addProcess(process);
+            //}
+            //else { // add to waiting queue if no available core
+            //    ScheduleWorker::addWaitProcess(process);
+            //}
+
             if (anyAvailableCore == true) {
                 // Get current time
                 time_t currTime;
@@ -175,7 +183,7 @@ void MainConsole::process() {
                 struct tm datetime;
                 time(&currTime);
                 localtime_s(&datetime, &currTime);
-                strftime(timeCreation, 50, "%m/%d/%G, %r", &datetime);
+                strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
 
                 string timeCreated = (string)timeCreation;
 

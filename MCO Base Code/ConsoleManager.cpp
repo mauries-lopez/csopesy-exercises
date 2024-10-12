@@ -121,11 +121,13 @@ void ConsoleManager::addFinishedProcess(Process* process) {
 }
 
 void ConsoleManager::listFinishedProcesses() {
-	std::cout << "[Unfinished Processes:]" << std::endl;
+	std::cout << "[Running Processes:]" << std::endl;
 	for (const auto& process : unfinishedProcessList) {
-		std::cout << "Process Name: " << process->getName()
-			<< ", Process ID: " << process->getID()
-			<< ", Unfinished: " << (process->isFinished() ? "Yes" : "No")
+		std::cout << process->getName() // Process Name
+			<< "\t" << "(" << process->getTimeCreated() << ")" // Timestamp of time created
+			<< "\t" << "Core: " << process->getCoreAssigned() // Core that worked on process
+			<< "\t" << process->getCurrentLine() << " \/ " << process->getTotalLines() // Current line / total line of execution
+			//<< ", Unfinished: " << (process->isFinished() ? "Yes" : "No") // Unfinished? Y/N
 			<< std::endl;
 	}
 
@@ -133,8 +135,10 @@ void ConsoleManager::listFinishedProcesses() {
 
 	std::cout << "[Finished Processes:]" << std::endl;
 	for (const auto& process : finishedProcesses) {
-		std::cout << "Process Name: " << process->getName()
-			<< ", Process ID: " << process->getID()
+		std::cout << process->getName()
+			<< "\t" << "(" << process->getTimeCreated() << ")" // Timestamp of time created
+			<< "\t" << "Core: " << process->getCoreAssigned() // Core that worked on process
+			<< "\t" << process->getCurrentLine() << " \/ " << process->getTotalLines() // Current line / total line of execution
 			<< ", Finished: " << (process->isFinished() ? "Yes" : "No")
 			<< std::endl;
 	}

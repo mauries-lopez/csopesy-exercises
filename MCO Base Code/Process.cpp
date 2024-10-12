@@ -2,14 +2,15 @@
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
 #include "ScheduleWorker.h"
+#include "FileWrite.h"
 #include <iostream>
 #include <thread>
 #include <mutex>
 
 
-Process::Process(const std::string& name, int id, int totalLines, const std::string& timeCreated)
+Process::Process(const std::string& name, int id, int totalLines, const std::string& timeCreated, int coreAssigned)
     : processName(name), processID(id), totalLineOfInstruction(totalLines),
-    currLineOfInstruction(0), timeCreated(timeCreated) {}
+    currLineOfInstruction(0), timeCreated(timeCreated), coreAssigned(coreAssigned) {}
 
 // Constructor to initialize the process with a name, ID, and other properties
 //Process::Process(String name, int id, int totalLineOfInstruction, String timeCreated) {
@@ -32,13 +33,13 @@ void Process::incrementLine(int core) {
         struct tm datetime;
         time(&currTime);
         localtime_s(&datetime, &currTime);
-        strftime(timeCreation, 50, "%m/%d/%G %r", &datetime);
+        strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
 
-        std::string timeCreated = (std::string)timeCreation; // timestamp of execution
-        std::string coreUsed = "Core: " + std::to_string(core); // associated core
-        std::string log = "Hello World from " + processName; // Create Print Statement (execution)
-        printLogs.push_back(timeCreated);
-        printLogs.push_back(coreUsed);
+        this->setCoreAssigned(core);
+        std::string timeCreated = "Executed line at timestamp: (" + (std::string)timeCreation + ")"; // timestamp of execution
+        std::string coreUsed = "Core: " + std::to_string(coreAssigned); // associated core
+        std::string printExec = "Hello World from " + processName; // Create Print Statement (execution)
+        std::string log = timeCreated + "   " + coreUsed + "   " + printExec;
         printLogs.push_back(log); // Put print statement to printLogs
         this->currLineOfInstruction = i;
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -56,6 +57,7 @@ void Process::incrementLine(int core) {
         }
 
         ConsoleManager::getInstance()->addFinishedProcess(this);
+        FileWrite::generateFile(processID, processName, getTimeCreated(), printLogs);
     }
     
 }

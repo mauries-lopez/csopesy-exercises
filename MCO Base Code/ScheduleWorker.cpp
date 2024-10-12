@@ -69,7 +69,8 @@ void ScheduleWorker::scheduleProcess() {
         }
 
         i++;
-        //Sleep(3000);
+        Sleep(100);
+
     }
 }
 
