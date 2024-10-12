@@ -27,7 +27,9 @@ void Process::incrementLine() {
 
     for (int i = this->currLineOfInstruction; i <= this->totalLineOfInstruction; i++) {
         std::lock_guard<std::mutex> lock(mtx);
-        std::string log = "Hello World from " + processName; // Create Print Statement
+        std::string formattedTime = getTimeCreated(); 
+        int coreID = this->coreID;
+        std::string log = "(" + formattedTime + ") Core:" + std::to_string(coreID) + " \"Hello world from " + processName + "!\"";
         printLogs.push_back(log); // Put print statement to printLogs
         this->currLineOfInstruction = i;
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -45,7 +47,8 @@ void Process::incrementLine() {
         }
 
         ConsoleManager::getInstance()->addFinishedProcess(this);
-        FileWrite::generateFile(processID, processName,timeCreated);
+        FileWrite::generateFile(processID, processName, getTimeCreated(), printLogs);  
+
     }
     
 }

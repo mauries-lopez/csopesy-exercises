@@ -1,6 +1,7 @@
 #include "BaseScreen.h"
 #include "ConsoleManager.h"
 #include "ScheduleWorker.h"
+#include "FileWrite.h"
 #include <iostream>
 #include <thread>
 
@@ -62,18 +63,27 @@ void BaseScreen::display() {
 }
 
 void BaseScreen::printProcessInfo() const {
-    std::cerr << "Process Name: " + this->attachedProcess->getName() << std::endl; 
-    std::cerr << "ID: " + std::to_string(this->attachedProcess->getID()) << std::endl; 
-    std::cerr << "Current Line of Instruction: "
-        << this->attachedProcess->getCurrentLine() << '/'
-        << this->attachedProcess->getTotalLines() << std::endl;
+    std::string processName = this->attachedProcess->getName();
+    int processID = this->attachedProcess->getID();
+    std::string timeCreated = this->attachedProcess->getTimeCreated();
+    int currentLine = this->attachedProcess->getCurrentLine();
+    int totalLines = this->attachedProcess->getTotalLines();
+
+
+    std::cerr << "Process Name: " << processName << std::endl;
+    std::cerr << "ID: " << std::to_string(processID) << std::endl;
+    std::cerr << "Current Line of Instruction: " << currentLine << '/' << totalLines << std::endl;
+
     //(HH/DD/YYYY,HH:MM:SS AM/PM)
-    std::cerr << "Created: " + this->attachedProcess->getTimeCreated() << std::endl; 
+    std::cerr << "Created: " << timeCreated << std::endl;
     //Append the logs into one array to consitently display it.
     std::vector<std::string> storePrintLogs = this->attachedProcess->getPrintLogs();
     for (int i = 1; i < storePrintLogs.size(); i++) {
         std::cerr << storePrintLogs[i] << std::endl;
     }
+
+    FileWrite::generateFile(processID, processName, timeCreated, storePrintLogs); 
+
 }
 
 void BaseScreen::baseScreenInput() {

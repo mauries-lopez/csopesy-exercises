@@ -12,8 +12,7 @@ public:
     void initialize(int numCores);
     static void addProcess(std::shared_ptr<Process> process);
     void scheduleProcess();
-    void displaySchedule() const;
-
+    //void displaySchedule() const;
     std::vector<std::shared_ptr<Process>> schedulerQueue;
     static std::vector<int> cores;
 

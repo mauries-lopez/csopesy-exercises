@@ -57,20 +57,13 @@ void ScheduleWorker::scheduleProcess() {
         }
 
         i++;
-        //Sleep(3000);
+        Sleep(100); // maybe can help to avoid cpu overuse
     }
 }
 
 void ScheduleWorker::initializeCores(int numCores) {
     for (int i = 0; i < numCores; i++) {
         cores.push_back(-1);
-    }
-}
-
-void ScheduleWorker::displaySchedule() const {
-    std::cout << "Scheduled Processes:" << std::endl;
-    for (const auto& process : processList) {
-        std::cout << " - " << process->processName << std::endl;
     }
 }
 

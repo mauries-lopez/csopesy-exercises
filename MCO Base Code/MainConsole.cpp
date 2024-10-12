@@ -41,6 +41,29 @@ void MainConsole::display() {
     
 }
 
+// Create 10 processes at startup
+void createInitialProcesses(ScheduleWorker& scheduler) {
+    for (int i = 0; i < 10; ++i) {
+        std::string processName = "Process_" + std::to_string(i + 1);
+
+        time_t currTime;
+        char timeCreation[50];
+        struct tm datetime;
+        time(&currTime);
+        localtime_s(&datetime, &currTime);
+        strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
+        std::string timeCreated = std::string(timeCreation);
+
+        // 100 lines of instructions
+        std::shared_ptr<Process> process = std::make_shared<Process>(processName, processID++, 100, timeCreated);
+
+        // Register the process to ConsoleManager and scheduler
+        std::shared_ptr<BaseScreen> baseScreen = std::make_shared<BaseScreen>(process, processName);
+        ConsoleManager::getInstance()->registerScreen(baseScreen);
+        scheduler.addProcess(process);
+    }
+}
+
 void MainConsole::process() {
 
     if (this->refresh == false) {
@@ -48,8 +71,12 @@ void MainConsole::process() {
         this->refresh = true;
     }
 
+    ScheduleWorker scheduler;
     // Create 10 processes, each with 100 print commands, upon the start of your OS emulator.
+    createInitialProcesses(scheduler);
 
+    std::thread schedulerThread(&ScheduleWorker::scheduleProcess, &scheduler);
+    schedulerThread.detach();
 
     string main_CommandInput = "";
     //string validCommands[7] = { "initialize", "screen", "scheduler-test", "scheduler-stop", "report-util", "clear", "exit" };
@@ -127,12 +154,11 @@ void MainConsole::process() {
                     activeScreens.push_back(baseScreen);
                 }
                 else {
-                    std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
+                   //std::cerr << "No Available Core. Process is queued." << std::endl;
                 }
             }
             else {
-                std::cerr << "No Available Core. Process is queued." << std::endl;
-
+              //  std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
             }
      
         }
