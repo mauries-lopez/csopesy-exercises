@@ -1,0 +1,10 @@
+
+
+
+delays-per-exec 0
+batch-process-freq 4294967296
+min-ins 1000
+quantum-cycles 5
+max-ins 2000
+scheduler "fcfs"
+num-cpu 4

@@ -3,10 +3,12 @@
 #include "MainConsole.h"
 #include "ConsoleManager.h"
 #include "ScheduleWorker.h"
+#include "Process.h"
 #include "AConsole.h"
 #include <sstream>
 #include <ctime>
 #include <thread>
+#include <fstream>
 
 using namespace std; //To not specify the prefix (std::<syntax>)
 
@@ -14,8 +16,7 @@ namespace fs = std::filesystem;
 
 int processID = 0; // This could be generated dynamically
 std::vector <std::string> processesNameList;
-
-// Waiting queue
+bool isInitialized = false;
 
 // Core Related
 std::vector<int> ScheduleWorker::cores;
@@ -54,90 +55,50 @@ void MainConsole::process() {
         this->refresh = true;
     }
     
-    for (int i = 0; i < 10; i++) {
-        if (!testRun) {
-            // Get current time
-            time_t currTime;
-            char timeCreation[50];
-            struct tm datetime;
-            time(&currTime);
-            localtime_s(&datetime, &currTime);
-            strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
+    //for (int i = 0; i < 10; i++) {
+    //    if (!testRun) {
+    //        // Get current time
+    //        time_t currTime;
+    //        char timeCreation[50];
+    //        struct tm datetime;
+    //        time(&currTime);
+    //        localtime_s(&datetime, &currTime);
+    //        strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
 
-            string timeCreated = (string)timeCreation;
+    //        string timeCreated = (string)timeCreation;
 
-            std::string processName = "process" + std::to_string(i);
-            shared_ptr<Process> process = make_shared<Process>(processName, i, 100, timeCreated);
+    //        std::string processName = "process" + std::to_string(i);
+    //        shared_ptr<Process> process = make_shared<Process>(processName, i, 100, timeCreated);
 
-            processesNameList.push_back(processName); //Para di matake ulit ung name
+    //        processesNameList.push_back(processName); //Para di matake ulit ung name
 
-            shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
-            ConsoleManager::getInstance()->registerScreen(baseScreen);
+    //        shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
+    //        ConsoleManager::getInstance()->registerScreen(baseScreen);
 
-            // Check for available cores
-            for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
-                if (ScheduleWorker::cores[i] == -1) {
-                    anyAvailableCore = true;
-                    break;
-                }
-                else {
-                    anyAvailableCore = false;
-                }
-            }
+    //        // Check for available cores
+    //        for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
+    //            if (ScheduleWorker::cores[i] == -1) {
+    //                anyAvailableCore = true;
+    //                break;
+    //            }
+    //            else {
+    //                anyAvailableCore = false;
+    //            }
+    //        }
 
-            // addProcess if there is available core
-            if (anyAvailableCore) {
-                ScheduleWorker::addProcess(process);
-            }
-            else { // add to waiting queue if no available core
-                ScheduleWorker::addWaitProcess(process);
-            }
-        }
-    }
-    
-    testRun = true;
-    
-
-    // Create 10 processes, each with 100 print commands, upon the start of your OS emulator.
- /*   shared_ptr<Process> process1 = make_shared<Process>("process1", 0, 100, "10/11/2024, 09:16:09 PM");
-    shared_ptr<Process> process2 = make_shared<Process>("process2", 1, 100, "10/11/2024, 09:17:09 PM");
-    shared_ptr<Process> process3 = make_shared<Process>("process3", 2, 100, "10/11/2024, 09:18:09 PM");
-    shared_ptr<Process> process4 = make_shared<Process>("process4", 3, 100, "10/11/2024, 09:19:09 PM");
-    shared_ptr<Process> process5 = make_shared<Process>("process5", 4, 100, "10/11/2024, 09:20:09 PM");
-    shared_ptr<Process> process6 = make_shared<Process>("process6", 5, 100, "10/11/2024, 09:21:09 PM");
-    shared_ptr<Process> process7 = make_shared<Process>("process7", 6, 100, "10/11/2024, 09:22:09 PM");
-    shared_ptr<Process> process8 = make_shared<Process>("process8", 7, 100, "10/11/2024, 09:23:09 PM");
-    shared_ptr<Process> process9 = make_shared<Process>("process9", 8, 100, "10/11/2024, 09:24:09 PM");
-    shared_ptr<Process> process10 = make_shared<Process>("process10", 9, 100, "10/11/2024, 09:25:09 PM");*/
-
-    /*ScheduleWorker::addProcess(process1);
-    ScheduleWorker::addProcess(process2);
-    ScheduleWorker::addProcess(process3);
-    ScheduleWorker::addProcess(process4);
-    ScheduleWorker::addWaitProcess(process5);
-    ScheduleWorker::addWaitProcess(process6);
-    ScheduleWorker::addWaitProcess(process7);
-    ScheduleWorker::addWaitProcess(process8);
-    ScheduleWorker::addWaitProcess(process9);
-    ScheduleWorker::addWaitProcess(process10);*/
-
-    /*ConsoleManager::ConsoleTable consoleTable;
-    consoleTable["process1"] = std::make_shared<AConsole>("process1");*/
-
-    // Manually adding to processesNameList vector (currently unable to enter BaseScreen using screen -r) -> need to register process name to consoleTable
-    /*processesNameList.push_back("process1");
-    processesNameList.push_back("process2");
-    processesNameList.push_back("process3");
-    processesNameList.push_back("process4");
-    processesNameList.push_back("process5");
-    processesNameList.push_back("process6");
-    processesNameList.push_back("process7");
-    processesNameList.push_back("process8");
-    processesNameList.push_back("process9");
-    processesNameList.push_back("process10");*/
+    //        // addProcess if there is available core
+    //        if (anyAvailableCore) {
+    //            ScheduleWorker::addProcess(process);
+    //        }
+    //        else { // add to waiting queue if no available core
+    //            ScheduleWorker::addWaitProcess(process);
+    //        }
+    //    }
+    //}
+    //
+    //testRun = true;
 
     string main_CommandInput = "";
-    //string validCommands[7] = { "initialize", "screen", "scheduler-test", "scheduler-stop", "report-util", "clear", "exit" };
 
     //// Initialize a vector to hold active screens
     vector<shared_ptr<BaseScreen>> activeScreens;
@@ -150,131 +111,239 @@ void MainConsole::process() {
     istringstream stream(main_CommandInput);
     string command, prefix, processName;
     stream >> command >> prefix >> processName;
+    
+    if (isInitialized == false) {
+        if (command == "initialize") {
 
-    // Check for specific command formats
-    if (command == "screen") {
+            isInitialized = true;
 
-        if (prefix == "-s" && !processName.empty()) {
+            // Read Config.txt
+            std::ifstream input("config.txt");
+            string parameter, value;
 
-            //If there are any available cores, proceed. Else, error.
-            //Check if there are any available cores
-            for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
-                if (ScheduleWorker::cores[i] == -1) {
-                    anyAvailableCore = true;
-                    break;
+            while (std::getline(input, parameter)) {
+                istringstream stream(parameter);
+                stream >> parameter >> value;
+
+                if (parameter == "num-cpu") { // Set num-cpu
+                    // Convert String to Int
+                    int numCpu = std::stoi(value);
+
+                    if (numCpu >= 1 && numCpu <= 128) {
+                        ScheduleWorker scheduleWorker;
+                        scheduleWorker.initialize(numCpu);
+                    }
+                    else {
+                        std::cerr << "The given number of CPU is in the invalid range. The range is [1,128] only." << std::endl;
+                        isInitialized = false;
+                    }
+
                 }
-                else {
-                    anyAvailableCore = false;
+                else if (parameter == "scheduler") {
+                    
                 }
-            }
+                else if (parameter == "quantum-cycles") {
 
-            //// addProcess if there is available core
-            //if (anyAvailableCore) {
-            //    ScheduleWorker::addProcess(process);
-            //}
-            //else { // add to waiting queue if no available core
-            //    ScheduleWorker::addWaitProcess(process);
-            //}
+                }
+                else if (parameter == "batch-process-freq") {
+                    long long frequency = std::stoll(value);
 
-            if (anyAvailableCore == true) {
-                // Get current time
-                time_t currTime;
-                char timeCreation[50];
-                struct tm datetime;
-                time(&currTime);
-                localtime_s(&datetime, &currTime);
-                strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
+                    if (frequency >= 1 && frequency <= 4294967296) {
+                        if (frequency == 1) {
+                            // TO-DO:: New Process is Generated at the end of each CPU cycle.
+                            this->batchProcessFreq = frequency;
+                        }
+                        else {
+                            this->batchProcessFreq = frequency;
+                        }
+                    }
+                    else {
+                        std::cerr << "The given number of Batch Process Frequency is in the invalid range. The range is [1,2^32] only." << std::endl;
+                        isInitialized = false;
+                    }
+                    
+                }
+                else if (parameter == "min-ins") {
+                    long long minIns = std::stoll(value);
 
-                string timeCreated = (string)timeCreation;
+                    if (minIns >= 1 && minIns <= 4294967296) {
+                        this->minimumIns = minIns;
+                    }
+                    else {
+                        std::cerr << "The given number of Minimum Instruction/s is in the invalid range. The range is [1,2^32] only." << std::endl;
+                        isInitialized = false;
+                    }
+                    
+                }
+                else if (parameter == "max-ins") {
+                    long long maxIns = std::stoll(value);
 
-                // Line 84 to 90: This is used for PRE-DETERMINING if the process name is already initialized or not.
-                // This is to avoid the unnecessary creation of process.
-                bool isProcessNameAvailable = true;
-                for (int i = 0; i < processesNameList.size(); i++) {
-                    if (processName == processesNameList[i]) {
-                        isProcessNameAvailable = false;
+                    if (maxIns >= 1 && maxIns <= 4294967296) {
+                        this->maximumIns = maxIns;
+                    }
+                    else {
+                        std::cerr << "The given number of ,aximum Instruction/s is in the invalid range. The range is [1,2^32] only." << std::endl;
+                        isInitialized = false;
                     }
                 }
+                else if (parameter == "delays-per-exec") {
+                    long long delays = std::stoll(value);
 
-                if (isProcessNameAvailable) {
-                    processesNameList.push_back(processName);
+                    if (delays >= 0 && delays <= 4294967296) {
 
-                    shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
-                    shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
-                    ConsoleManager::getInstance()->registerScreen(baseScreen);
+                        if (delays == 0) {
+                            // TO-DO:: If delay is 0, each instruction is executed per CPU cycle
+                            this->delaysPerExec = delays;
+                        }
+                        else {
+                            this->delaysPerExec = delays;
+                        }
+                    }
+                    else {
+                        std::cerr << "The given number of Delays Per Execution is in the invalid range. The range is [1,2^32] only." << std::endl;
+                        isInitialized = false;
+                    }
+                }
+            }
+            std::cout << this->batchProcessFreq << std::endl;
+            std::cout << this->delaysPerExec << std::endl;
+            std::cout << this->maximumIns << std::endl;
+            std::cout << this->minimumIns << std::endl;
 
-                    ScheduleWorker::addProcess(process);
+        }
+        else if (command == "exit") {
+            ConsoleManager::getInstance()->exitApplication();
+        }
+        else {
+            std::cerr << "System is not yet initialized. Initialize first." << std::endl;
+        }
 
-                    //std::thread baseScreenInputThread(&ScheduleWorker::executeProcess, &scheduleWorker);
-                    ////scheduleWorker.executeProcess();
+    }
+    else {
 
+        if (isInitialized == true) {
+            // Check for specific command formats
+            if (command == "screen") {
+
+                if (prefix == "-s" && !processName.empty()) {
+
+                    //If there are any available cores, proceed. Else, error.
+                    //Check if there are any available cores
+                    for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
+                        if (ScheduleWorker::cores[i] == -1) {
+                            anyAvailableCore = true;
+                            break;
+                        }
+                        else {
+                            anyAvailableCore = false;
+                        }
+                    }
+
+                    if (anyAvailableCore == true) {
+                        // Get current time
+                        time_t currTime;
+                        char timeCreation[50];
+                        struct tm datetime;
+                        time(&currTime);
+                        localtime_s(&datetime, &currTime);
+                        strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
+
+                        string timeCreated = (string)timeCreation;
+
+                        // Line 84 to 90: This is used for PRE-DETERMINING if the process name is already initialized or not.
+                        // This is to avoid the unnecessary creation of process.
+                        bool isProcessNameAvailable = true;
+                        for (int i = 0; i < processesNameList.size(); i++) {
+                            if (processName == processesNameList[i]) {
+                                isProcessNameAvailable = false;
+                            }
+                        }
+
+                        if (isProcessNameAvailable) {
+                            processesNameList.push_back(processName);
+
+                            shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
+                            shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
+                            ConsoleManager::getInstance()->registerScreen(baseScreen);
+
+                            ScheduleWorker::addProcess(process);
+
+                            //std::thread baseScreenInputThread(&ScheduleWorker::executeProcess, &scheduleWorker);
+                            ////scheduleWorker.executeProcess();
+
+                            ConsoleManager::getInstance()->switchConsole(processName);
+
+                            activeScreens.push_back(baseScreen);
+                        }
+                        else {
+                            std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
+                        }
+                    }
+                    else {
+                        std::cerr << "No Available Core. Process is queued." << std::endl;
+                        // Add process to waiting queue
+                        // Assigning process
+                        // Get current time
+                        time_t currTime;
+                        char timeCreation[50];
+                        struct tm datetime;
+                        time(&currTime);
+                        localtime_s(&datetime, &currTime);
+                        strftime(timeCreation, 50, "%m/%d/%G, %r", &datetime);
+
+                        string timeCreated = (string)timeCreation;
+
+                        bool isProcessNameAvailable = true;
+                        for (int i = 0; i < processesNameList.size(); i++) {
+                            if (processName == processesNameList[i]) {
+                                isProcessNameAvailable = false;
+                            }
+                        }
+
+                        if (isProcessNameAvailable) {
+                            processesNameList.push_back(processName);
+
+                            shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
+
+                            // Add process to waiting queue
+                            ScheduleWorker::addWaitProcess(process);
+                        }
+                        else {
+                            std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
+                        }
+                    }
+
+                }
+
+                else if (prefix == "-s" && processName.empty()) {
+                    ConsoleManager::getInstance()->nullProcessName();
+                }
+
+                else if (prefix == "-r" && !processName.empty()) {
                     ConsoleManager::getInstance()->switchConsole(processName);
-
-                    activeScreens.push_back(baseScreen);
                 }
+
+                else if (prefix == "-r" && processName.empty()) {
+                    ConsoleManager::getInstance()->nullProcessName();
+                }
+
+                else if (prefix == "-ls") {
+                    ConsoleManager::getInstance()->listFinishedProcesses();
+                }
+
+                // improper prefix
                 else {
-                    std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
+                    ConsoleManager::getInstance()->invalidPrefix();
                 }
-            }
+            } 
             else {
-                std::cerr << "No Available Core. Process is queued." << std::endl;
-                // Add process to waiting queue
-                // Assigning process
-                // Get current time
-                time_t currTime;
-                char timeCreation[50];
-                struct tm datetime;
-                time(&currTime);
-                localtime_s(&datetime, &currTime);
-                strftime(timeCreation, 50, "%m/%d/%G, %r", &datetime);
-
-                string timeCreated = (string)timeCreation;
-
-                bool isProcessNameAvailable = true;
-                for (int i = 0; i < processesNameList.size(); i++) {
-                    if (processName == processesNameList[i]) {
-                        isProcessNameAvailable = false;
-                    }
-                }
-
-                if (isProcessNameAvailable) {
-                    processesNameList.push_back(processName);
-
-                    shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
-
-                    // Add process to waiting queue
-                    ScheduleWorker::addWaitProcess(process);
-                } else {
-                    std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
-                }
+                std::cerr << command + " invalid command." << std::endl;
             }
-     
-        }
 
-        else if (prefix == "-s" && processName.empty()) {
-            ConsoleManager::getInstance()->nullProcessName();
-        }
-
-        else if (prefix == "-r" && !processName.empty()) {
-            ConsoleManager::getInstance()->switchConsole(processName);
-        }
-
-        else if (prefix == "-r" && processName.empty()) {
-            ConsoleManager::getInstance()->nullProcessName();
         }
         
-        else if (prefix == "-ls") {
-            ConsoleManager::getInstance()->listFinishedProcesses();
-        } 
-
-        // improper prefix
-        else {
-            ConsoleManager::getInstance()->invalidPrefix();
-        }
-
     }
-    else if (command == "exit") {
-        ConsoleManager::getInstance()->exitApplication();
-    }
+
+
 }
 
