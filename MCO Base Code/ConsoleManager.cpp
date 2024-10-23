@@ -4,6 +4,7 @@
 #include "BaseScreen.h"
 #include "Process.h"
 #include <thread>
+#include <fstream>
 
 ConsoleManager* ConsoleManager::sharedInstance = nullptr;
 ConsoleManager* ConsoleManager::getInstance() {
@@ -120,10 +121,32 @@ void ConsoleManager::addFinishedProcess(Process* process) {
 	finishedProcesses.push_back(process);
 }
 
-void ConsoleManager::listFinishedProcesses() {
-	std::cout << "[Running Processes:]" << std::endl;
+void ConsoleManager::listFinishedProcesses(bool writeToFile) {
+	std::ostream* outStream;
+	std::ofstream logFile;
+
+	// Write to file only if report-util is called
+	if (writeToFile) {
+		logFile.open("csopesy-log.txt", std::ios::out | std::ios::trunc);
+		if (!logFile.is_open()) {
+			std::cerr << "Error: Unable to open log file." << std::endl;
+			return;
+		}
+		outStream = &logFile; // Point to the file stream
+	}
+	else {
+		outStream = &std::cout; // Point to the console output
+	}
+
+	// TODO: call respective variables
+	*outStream << "\nCPU utilization: " << "%"
+			<< "\nCores used: " 
+			<< "\nCores available: " << "\n\n" 
+			<< std::endl;
+
+	*outStream << "Running Processes:" << std::endl;
 	for (const auto& process : unfinishedProcessList) {
-		std::cout << process->getName() // Process Name
+		*outStream << process->getName() // Process Name
 			<< "\t" << "(" << process->getTimeCreated() << ")" // Timestamp of time created
 			<< "\t" << "Core: " << process->getCoreAssigned() // Core that worked on process
 			<< "\t" << process->getCurrentLine() << " \/ " << process->getTotalLines() // Current line / total line of execution
@@ -133,14 +156,18 @@ void ConsoleManager::listFinishedProcesses() {
 
 	std::cout << "\n\n";
 
-	std::cout << "[Finished Processes:]" << std::endl;
+	*outStream << "\n\nFinished Processes:" << std::endl;
 	for (const auto& process : finishedProcesses) {
-		std::cout << process->getName()
+		*outStream << process->getName() 
 			<< "\t" << "(" << process->getTimeCreated() << ")" // Timestamp of time created
 			<< "\t" << "Core: " << process->getCoreAssigned() // Core that worked on process
 			<< "\t" << process->getCurrentLine() << " \/ " << process->getTotalLines() // Current line / total line of execution
 			<< ", Finished: " << (process->isFinished() ? "Yes" : "No")
 			<< std::endl;
+	}
+
+	if (writeToFile) {
+		logFile.close();
 	}
 }
 

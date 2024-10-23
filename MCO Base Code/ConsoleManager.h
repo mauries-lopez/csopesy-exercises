@@ -41,7 +41,7 @@ public:
 	void addFinishedProcess(Process* process);
 	std::vector<Process*> unfinishedProcessList;
 	std::vector<Process*> finishedProcesses;
-	void listFinishedProcesses();
+	void listFinishedProcesses(bool writeToFile = false);
 
 	HANDLE getConsoleHandle() const;
 

@@ -34,6 +34,13 @@ void asciiPrint() {
     for (int i = 0; i < 6; i++) {
         cout << asciiText[i] << "\n";
     }
+
+    cout << "__________________________________________________" << endl;
+    cout << "\nWelcome to CSOPESY Emulator!" << endl;
+    cout << "\nDevelopers: \nLopez, Mauries\nRomblon, Kathleen\nTighe, Kaitlyn\n"; 
+    cout << "\nLast updated: 10-XX-2024\n"; // TODO: update when last updated ig
+    cout << "__________________________________________________" << endl;
+
 }
 
 MainConsole::MainConsole(String name) : AConsole(name) {}
@@ -334,7 +341,7 @@ void MainConsole::process() {
                 }
 
                 else if (prefix == "-ls") {
-                    ConsoleManager::getInstance()->listFinishedProcesses();
+                    ConsoleManager::getInstance()->listFinishedProcesses(false); // set writeToFIle as false
                 }
 
                 // improper prefix
@@ -342,6 +349,10 @@ void MainConsole::process() {
                     ConsoleManager::getInstance()->invalidPrefix();
                 }
             } 
+            else if (command == "report-util") {
+                ConsoleManager::getInstance()->listFinishedProcesses(true); // set WriteToFile as true 
+                std::cout << "Report generated at C:/csopesy-log.txt!" << std::endl;
+            }
             else {
                 std::cerr << command + " invalid command." << std::endl;
             }
