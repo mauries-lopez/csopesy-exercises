@@ -54,49 +54,6 @@ void MainConsole::process() {
         asciiPrint();
         this->refresh = true;
     }
-    
-    //for (int i = 0; i < 10; i++) {
-    //    if (!testRun) {
-    //        // Get current time
-    //        time_t currTime;
-    //        char timeCreation[50];
-    //        struct tm datetime;
-    //        time(&currTime);
-    //        localtime_s(&datetime, &currTime);
-    //        strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
-
-    //        string timeCreated = (string)timeCreation;
-
-    //        std::string processName = "process" + std::to_string(i);
-    //        shared_ptr<Process> process = make_shared<Process>(processName, i, 100, timeCreated);
-
-    //        processesNameList.push_back(processName); //Para di matake ulit ung name
-
-    //        shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
-    //        ConsoleManager::getInstance()->registerScreen(baseScreen);
-
-    //        // Check for available cores
-    //        for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
-    //            if (ScheduleWorker::cores[i] == -1) {
-    //                anyAvailableCore = true;
-    //                break;
-    //            }
-    //            else {
-    //                anyAvailableCore = false;
-    //            }
-    //        }
-
-    //        // addProcess if there is available core
-    //        if (anyAvailableCore) {
-    //            ScheduleWorker::addProcess(process);
-    //        }
-    //        else { // add to waiting queue if no available core
-    //            ScheduleWorker::addWaitProcess(process);
-    //        }
-    //    }
-    //}
-    //
-    //testRun = true;
 
     string main_CommandInput = "";
 
@@ -116,6 +73,7 @@ void MainConsole::process() {
         if (command == "initialize") {
 
             isInitialized = true;
+
 
             // Read Config.txt
             std::ifstream input("config.txt");
@@ -209,6 +167,54 @@ void MainConsole::process() {
             std::cout << this->delaysPerExec << std::endl;
             std::cout << this->maximumIns << std::endl;
             std::cout << this->minimumIns << std::endl;
+
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            // 10 Process after Intializing... Temporary
+
+            for (int i = 0; i < 10; i++) {
+                if (!testRun) {
+                    // Get current time
+                    time_t currTime;
+                    char timeCreation[50];
+                    struct tm datetime;
+                    time(&currTime);
+                    localtime_s(&datetime, &currTime);
+                    strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
+
+                    string timeCreated = (string)timeCreation;
+
+                    std::string processName = "process" + std::to_string(i);
+                    shared_ptr<Process> process = make_shared<Process>(processName, i, 100, timeCreated);
+
+                    processesNameList.push_back(processName); //Para di matake ulit ung name
+
+                    shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
+                    ConsoleManager::getInstance()->registerScreen(baseScreen);
+
+                    // Check for available cores
+                    for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
+                        if (ScheduleWorker::cores[i] == -1) {
+                            anyAvailableCore = true;
+                            break;
+                        }
+                        else {
+                            anyAvailableCore = false;
+                        }
+                    }
+
+                    // addProcess if there is available core
+                    if (anyAvailableCore) {
+                        ScheduleWorker::addProcess(process);
+                    }
+                    else { // add to waiting queue if no available core
+                        ScheduleWorker::addWaitProcess(process);
+                    }
+                }
+            }
+
+            testRun = true;
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
 
         }
         else if (command == "exit") {
