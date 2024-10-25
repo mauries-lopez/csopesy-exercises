@@ -5,6 +5,16 @@
 #include "Process.h"
 #include <thread>
 #include <fstream>
+#include <string>
+#include <chrono>  
+#include <sstream>  
+#include <format> 
+#include <mutex>
+#include <map>  // Assuming processes are stored in a map
+
+std::mutex processMutex; // Global or member variable for thread safety
+std::map<std::string, std::shared_ptr<Process>> processes;  // Store processes by name
+
 
 ConsoleManager* ConsoleManager::sharedInstance = nullptr;
 ConsoleManager* ConsoleManager::getInstance() {
@@ -108,6 +118,64 @@ void ConsoleManager::exitApplication() {
 bool ConsoleManager::isRunning() const {
 	return this->running;
 }
+
+void ConsoleManager::setBatchProcessFreq(int freq) {
+	batchProcessFreq = freq;
+}
+
+int ConsoleManager::getBatchProcessFreq() const {
+	return batchProcessFreq;
+}
+
+bool ConsoleManager::createProcess(const std::string& name, long long minimumIns, long long maximumIns) {
+	std::lock_guard<std::mutex> lock(processMutex);  
+
+	// Check if the process name already exists
+	if (processes.find(name) != processes.end()) {
+		std::cerr << std::format("> Process '{}' already exists.\n", name);
+		return false;
+	}
+
+	// Create a new process if it doesn't already exist
+	auto process = std::make_shared<Process>(name, minimumIns, maximumIns);
+	processes[name] = process;
+
+	// Add the process to the scheduler
+	//if (scheduler) {
+	//	scheduler->addProcess(process);
+	//	std::cout << std::format("> Process '{}' created and added to the scheduler.\n", name);
+	//}
+	//else {
+	//	std::cerr << "> Scheduler is not available.\n";
+	//	return false;
+	//}
+
+	return true;
+}
+
+void ConsoleManager::schedulerTest(long long batchProcessFreq, long long minIns, long long maxIns) {
+	std::thread([this, batchProcessFreq, minIns, maxIns] {
+		schedulerTestRun = true;
+
+		int cpuCycles = 1;
+		int i = 1;
+
+		while (schedulerTestRun) {
+			if (cpuCycles % batchProcessFreq == 0) {
+				std::string processName = "process" + std::to_string(i);
+				createProcess(processName, minIns, maxIns); 
+				i++;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));  // delay
+			cpuCycles++;
+		}
+		}).detach();
+}
+
+void ConsoleManager::schedulerTestStop() {
+	schedulerTestRun = false;
+}
+
 
 void ConsoleManager::addFinishedProcess(Process* process) {
 	

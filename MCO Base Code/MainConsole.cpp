@@ -117,6 +117,8 @@ void MainConsole::process() {
                         if (frequency == 1) {
                             // TO-DO:: New Process is Generated at the end of each CPU cycle.
                             this->batchProcessFreq = frequency;
+                            ConsoleManager::getInstance()->setBatchProcessFreq(frequency);
+
                         }
                         else {
                             this->batchProcessFreq = frequency;
@@ -349,6 +351,17 @@ void MainConsole::process() {
                     ConsoleManager::getInstance()->invalidPrefix();
                 }
             } 
+            else if (command == "scheduler-test") {
+                // Start schedule test
+                std::cout << "> Creating dummy processes" << std::endl;
+                ConsoleManager::getInstance()->schedulerTest(batchProcessFreq, minimumIns, maximumIns);
+            }
+            else if (command == "scheduler-stop") {
+                // Stop schedule test
+                std::cout << "> Stopping creation of dummy processes" << std::endl;
+                ConsoleManager::getInstance()->schedulerTestStop();  
+            }
+
             else if (command == "report-util") {
                 ConsoleManager::getInstance()->listFinishedProcesses(true); // set WriteToFile as true 
                 std::cout << "Report generated at C:/csopesy-log.txt!" << std::endl;

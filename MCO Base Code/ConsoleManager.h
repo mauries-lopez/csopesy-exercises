@@ -46,7 +46,11 @@ public:
 	HANDLE getConsoleHandle() const;
 
 	void setCursorPosition(int posX, int posY) const;
-
+	void schedulerTest(long long batchProcessFreq, long long minIns, long long maxIns);
+	bool createProcess(const std::string& name, long long minimumIns, long long maximumIns);
+	void schedulerTestStop();
+	void setBatchProcessFreq(int freq);
+	int getBatchProcessFreq() const;
 private:
 	ConsoleManager();
 	~ConsoleManager() = default;
@@ -60,4 +64,6 @@ private:
 
 	HANDLE consoleHandle;
 	bool running = true;
+	int batchProcessFreq;
+	bool schedulerTestRun;
 };
