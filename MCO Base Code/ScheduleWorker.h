@@ -15,13 +15,14 @@ public:
     void scheduleProcess();
     void displaySchedule() const;
 
+    static int usedCores;                 
+    static int availableCores;              
     std::vector<std::shared_ptr<Process>> schedulerQueue;
     static std::vector<int> cores;
     int coreAssigned;
 
-   
 private:
-    std::mutex mtx;
+    int schedulerCurCycle;
     void initializeCores(int numCores);
     static std::vector<std::shared_ptr<Process>> processList;
     static std::vector<std::shared_ptr<Process>> waitingQueue;

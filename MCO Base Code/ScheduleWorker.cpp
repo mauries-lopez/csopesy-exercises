@@ -5,8 +5,7 @@
 #include <chrono>
 #include <mutex>
 #include <Windows.h>
-// Initialize cores
-//int cores[4] = {-1,-1,-1,-1}; // array of cores size 4, each initialized as -1 (free; set to 1 if in use)
+#include "MainConsole.h"
 
 std::vector<std::shared_ptr<Process>> ScheduleWorker::processList;
 std::vector<std::shared_ptr<Process>> ScheduleWorker::waitingQueue;
@@ -20,6 +19,10 @@ ScheduleWorker::~ScheduleWorker() {
 }
 
 void ScheduleWorker::initialize(int numCores) {
+
+    this->schedulerCurCycle = MainConsole::curClockCycle;
+
+    this->availableCores = numCores;
     this->initializeCores(numCores);
 
     //Make a thread for the scheduler so it can constantly check for processes
@@ -39,37 +42,44 @@ void ScheduleWorker::addWaitProcess(std::shared_ptr<Process> process) {
 
 void ScheduleWorker::scheduleProcess() {
 
+    // Pause for a moment (This is necessary so that it will start checking on CPU #0 upon initialized)
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
     //First-Come First Serve Algorithm
     int i = 0;
     while (true) {
 
-        // If all cores are checked, recheck all again.
-        if (i == cores.size()) {
-            i = 0;
-        }
-
-        if (!processList.empty()) {
-            if (cores[i] == -1) { // Found available core
-                // Assign core to process
-                coreAssigned = i;
-                // Associate core to currently executed process
-                //Start the Process
-                std::thread processIncrementLine(&Process::incrementLine, processList.front(), coreAssigned);
-                //Separate the thread of the process.
-                processIncrementLine.detach();
-                //Remove the current process in processList <-- processList should be empty again 
-                processList.erase(processList.begin());
-                // Add to processList the process at the top of waitingQueue
-                if (!waitingQueue.empty()) {
-                    processList.push_back(waitingQueue.front());
-                }
-                //Set core to busy
-                cores[i] = 1;
+        if (this->schedulerCurCycle != MainConsole::curClockCycle) {
+            // If all cores are checked, recheck all again.
+            if (i == cores.size()) {
+                i = 0;
             }
-        }
+            if (!processList.empty()) {
+                if (cores[i] == -1) { // Found available core
+                    // Assign core to process
+                    coreAssigned = i;
+                    //Set core to busy
+                    cores[i] = 1;
+                    // Add count of used cores
+                    usedCores++;
+                    // Associate core to currently executed process
+                    //Start the Process
+                    std::thread processIncrementLine(&Process::incrementLine, processList.front(), coreAssigned);
+                    //Separate the thread of the process.
+                    processIncrementLine.detach();
+                    //Remove the current process in processList <-- processList should be empty again 
+                    processList.erase(processList.begin());
+                    // Add to processList the process at the top of waitingQueue
+                    if (!waitingQueue.empty()) {
+                        processList.push_back(waitingQueue.front());
+                    }
+                }
+            }
 
-        i++;
-        Sleep(100);
+            i++;
+            this->schedulerCurCycle = MainConsole::curClockCycle;
+            Sleep(100);
+        }
 
     }
 }
@@ -86,11 +96,3 @@ void ScheduleWorker::displaySchedule() const {
         std::cout << " - " << process->processName << std::endl;
     }
 }
-
-
-
-//void ScheduleWorker::removeFinishedProcess() {
-//    if (!processList.empty()) {
-//        processList.erase(processList.begin());
-//    }
-//}

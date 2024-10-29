@@ -16,44 +16,7 @@ void BaseScreen::process() {
     if (this->refresh == false) {
         this->refresh = true;
     }
-
-    //// Add Process to ProcessList
-    //ScheduleWorker scheduleWorker;
-    //scheduleWorker.addProcess(this->attachedProcess);
-    //// If schedulerQueue is free/empty, put the process inside schedulerQueue to be executed. Else, stay in ProcessList
-    //if ( !scheduleWorker.schedulerQueue.empty()) {
-    //    scheduleWorker.executeProcess();
-    //}
-
-    // Thread for handling user input concurrently
-    //std::thread baseScreenInputThread(&BaseScreen::baseScreenInput, this); //Input
     this->baseScreenInput();
-    
-    //// CONTINOUSLY check if the process is already finish or not
-    //while (true) {
-    //    std::vector<std::shared_ptr<Process>> finishedProcessesList = ConsoleManager::getInstance()->finishedProcesses;
-    //    // If Process is finish
-    //    if (this->attachedProcess->isFinished()) {
-
-    //        bool finishedProcess = false;
-    //        // Check if the process is already in the finishProcesses List
-    //        for (int i = 0; i < finishedProcessesList.size(); i++) {
-    //            if (finishedProcessesList[i] == this->attachedProcess) {
-    //                finishedProcess = true;
-    //            }
-    //        }
-
-    //        // If process is not yet MARKED as finished, mark it as finished. Else, do nothing.
-    //        if (finishedProcess == false) {
-    //            ConsoleManager::getInstance()->addFinishedProcess(this->attachedProcess);
-    //        }
-    //    }
-    //}
-
-    
-    // Wait for both threads to finish
-    //processIncrementLine.detach();
-    //baseScreenInputThread.join();
 }
 
 
@@ -82,6 +45,22 @@ void BaseScreen::baseScreenInput() {
         
         std::cout << "@BaseScreen->: ";
         getline(std::cin, command);
+
+        if (command == "process-smi") {
+            if (this->attachedProcess->isFinished() == true) {
+                std::cerr << "\nProcess: " << this->attachedProcess->getName() << std::endl;
+                std::cerr << "ID: " << std::to_string(this->attachedProcess->getID()) << std::endl;
+                std::cerr << "\nFinished!" << std::endl << std::endl;
+            }
+            else {
+                std::cerr << "\nCurrent Line of Instruction: " << this->attachedProcess->getCurrentLine() << std::endl;;
+                std::cerr << "Lines of code: " << this->attachedProcess->getTotalLines() << std::endl << std::endl;
+            }
+        }
+        else {
+            std::cerr << "Invalid Command." << std::endl;
+        }
+
     } while (command != "exit");
 
     if (command == "exit") {

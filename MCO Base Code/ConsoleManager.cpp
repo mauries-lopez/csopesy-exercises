@@ -5,6 +5,11 @@
 #include "Process.h"
 #include <thread>
 #include <fstream>
+#include "ScheduleWorker.h"
+
+int ScheduleWorker::usedCores = 0;
+int ScheduleWorker::availableCores = 0;
+int MainConsole::totalNumCores = 0;
 
 ConsoleManager* ConsoleManager::sharedInstance = nullptr;
 ConsoleManager* ConsoleManager::getInstance() {
@@ -139,17 +144,17 @@ void ConsoleManager::listFinishedProcesses(bool writeToFile) {
 	}
 
 	// TODO: call respective variables
-	*outStream << "\nCPU utilization: " << "%"
-			<< "\nCores used: " 
-			<< "\nCores available: " << "\n\n" 
-			<< std::endl;
+	// Compute CPU Utilization
+	int cpuUtilPercent = (static_cast<float>(ScheduleWorker::usedCores) / MainConsole::totalNumCores) * 100;
+	int availCores = abs((ScheduleWorker::usedCores - ScheduleWorker::availableCores));
+	*outStream << "\nCPU utilization: " << cpuUtilPercent << "%/100%" << "\nCores used: " << ScheduleWorker::usedCores << "\nCores available: " << availCores << "\n\n" << std::endl;
 
 	*outStream << "Running Processes:" << std::endl;
 	for (const auto& process : unfinishedProcessList) {
 		*outStream << process->getName() // Process Name
 			<< "\t" << "(" << process->getTimeCreated() << ")" // Timestamp of time created
 			<< "\t" << "Core: " << process->getCoreAssigned() // Core that worked on process
-			<< "\t" << process->getCurrentLine() << " \/ " << process->getTotalLines() // Current line / total line of execution
+			<< "\t" << process->getCurrentLine() << " / " << process->getTotalLines() // Current line / total line of execution
 			//<< ", Unfinished: " << (process->isFinished() ? "Yes" : "No") // Unfinished? Y/N
 			<< std::endl;
 	}
@@ -161,7 +166,7 @@ void ConsoleManager::listFinishedProcesses(bool writeToFile) {
 		*outStream << process->getName() 
 			<< "\t" << "(" << process->getTimeCreated() << ")" // Timestamp of time created
 			<< "\t" << "Core: " << process->getCoreAssigned() // Core that worked on process
-			<< "\t" << process->getCurrentLine() << " \/ " << process->getTotalLines() // Current line / total line of execution
+			<< "\t" << process->getCurrentLine() << " / " << process->getTotalLines() // Current line / total line of execution
 			<< ", Finished: " << (process->isFinished() ? "Yes" : "No")
 			<< std::endl;
 	}

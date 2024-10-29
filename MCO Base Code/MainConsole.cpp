@@ -9,6 +9,7 @@
 #include <ctime>
 #include <thread>
 #include <fstream>
+#include <random>
 
 using namespace std; //To not specify the prefix (std::<syntax>)
 
@@ -81,7 +82,6 @@ void MainConsole::process() {
 
             isInitialized = true;
 
-
             // Read Config.txt
             std::ifstream input("config.txt");
             string parameter, value;
@@ -95,6 +95,7 @@ void MainConsole::process() {
                     int numCpu = std::stoi(value);
 
                     if (numCpu >= 1 && numCpu <= 128) {
+                        this->totalNumCores = numCpu;
                         ScheduleWorker scheduleWorker;
                         scheduleWorker.initialize(numCpu);
                     }
@@ -170,15 +171,15 @@ void MainConsole::process() {
                     }
                 }
             }
-            std::cout << this->batchProcessFreq << std::endl;
-            std::cout << this->delaysPerExec << std::endl;
-            std::cout << this->maximumIns << std::endl;
-            std::cout << this->minimumIns << std::endl;
+            //std::cout << this->batchProcessFreq << std::endl;
+            //std::cout << this->delaysPerExec << std::endl;
+            //std::cout << this->maximumIns << std::endl;
+            //std::cout << this->minimumIns << std::endl;
 
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////
             // 10 Process after Intializing... Temporary
-
+            
             for (int i = 0; i < 10; i++) {
                 if (!testRun) {
                     // Get current time
@@ -192,7 +193,13 @@ void MainConsole::process() {
                     string timeCreated = (string)timeCreation;
 
                     std::string processName = "process" + std::to_string(i);
-                    shared_ptr<Process> process = make_shared<Process>(processName, i, 100, timeCreated);
+
+                    std::random_device rd;
+                    std::mt19937_64 gen(rd());  // Use 64-bit version of Mersenne Twister
+                    std::uniform_int_distribution<long long> dis(this->minimumIns, this->maximumIns);
+                    long long random_value = dis(gen);
+
+                    shared_ptr<Process> process = make_shared<Process>(processName, i, random_value, timeCreated);
 
                     processesNameList.push_back(processName); //Para di matake ulit ung name
 
@@ -217,11 +224,15 @@ void MainConsole::process() {
                     else { // add to waiting queue if no available core
                         ScheduleWorker::addWaitProcess(process);
                     }
+
                 }
             }
 
             testRun = true;
+            
             ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+            std::cerr << "System successfully initialized." << std::endl;
 
         }
         else if (command == "exit") {
@@ -236,7 +247,7 @@ void MainConsole::process() {
 
         if (isInitialized == true) {
             // Check for specific command formats
-            if (command == "screen") {
+            if (command == "screen" && !prefix.empty()) {
 
                 if (prefix == "-s" && !processName.empty()) {
 
@@ -275,7 +286,14 @@ void MainConsole::process() {
                         if (isProcessNameAvailable) {
                             processesNameList.push_back(processName);
 
-                            shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
+                            //Randomize Number of Maximum Instruction within given interval
+                            // Create a random device and a random engine
+                            std::random_device rd;
+                            std::mt19937_64 gen(rd());  // Use 64-bit version of Mersenne Twister
+                            std::uniform_int_distribution<long long> dis(this->minimumIns, this->maximumIns);
+                            long long random_value = dis(gen);
+
+                            shared_ptr<Process> process = make_shared<Process>(processName, processID++, random_value, timeCreated);
                             shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
                             ConsoleManager::getInstance()->registerScreen(baseScreen);
 
@@ -316,7 +334,14 @@ void MainConsole::process() {
                         if (isProcessNameAvailable) {
                             processesNameList.push_back(processName);
 
-                            shared_ptr<Process> process = make_shared<Process>(processName, processID++, 100, timeCreated);
+                            //Randomize Number of Maximum Instruction within given interval
+                            // Create a random device and a random engine
+                            std::random_device rd;
+                            std::mt19937_64 gen(rd());  // Use 64-bit version of Mersenne Twister
+                            std::uniform_int_distribution<long long> dis(this->minimumIns, this->maximumIns);
+                            long long random_value = dis(gen);
+
+                            shared_ptr<Process> process = make_shared<Process>(processName, processID++, random_value, timeCreated);
 
                             // Add process to waiting queue
                             ScheduleWorker::addWaitProcess(process);
@@ -348,7 +373,15 @@ void MainConsole::process() {
                 else {
                     ConsoleManager::getInstance()->invalidPrefix();
                 }
-            } 
+            }
+            else if (command == "screen" && prefix.empty()) {
+                //TO-DO : Details about screen. How to use screen commands?
+                std::cout << "\n[Screen Command Information]" << std::endl;
+                std::cout << "List of Screen Commands:" << std::endl;
+                std::cout << "(1) screen -s <process name> \tTo create a new process" << std::endl;
+                std::cout << "(2) screen -r <process name> \tTo view the details of an created proces" << std::endl;
+                std::cout << "(3) screen -ls \t\t\tTo view unfinish and finish processes\n" << std::endl;
+            }
             else if (command == "report-util") {
                 ConsoleManager::getInstance()->listFinishedProcesses(true); // set WriteToFile as true 
                 std::cout << "Report generated at C:/csopesy-log.txt!" << std::endl;
@@ -363,4 +396,3 @@ void MainConsole::process() {
 
 
 }
-

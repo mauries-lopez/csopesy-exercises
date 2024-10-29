@@ -9,7 +9,7 @@
 class Process {
 public:
     // Constructor to initialize the process with a name, ID, total lines of instruction, and time created
-    Process(const std::string& name, int id, int totalLines, const std::string& timeCreated, int coreAssigned = 5); // Core assignment default 5 for when no core is assigned
+    Process(const std::string& name, int id, long long totalLines, const std::string& timeCreated, int coreAssigned = 5); // Core assignment default 5 for when no core is assigned
     ~Process() = default;
 
     // Method to check if the process is finished
@@ -23,8 +23,8 @@ public:
     // Getters
     std::string getName() const { return processName; }
     int getID() const { return processID; }
-    int getCurrentLine() const { return currLineOfInstruction; } 
-    int getTotalLines() const { return totalLineOfInstruction; } 
+    long long getCurrentLine() const { return currLineOfInstruction; } 
+    long long getTotalLines() const { return totalLineOfInstruction; }
     std::vector<std::string> getPrintLogs();
     std::string getTimeCreated() const { return timeCreated; }
     int getCoreAssigned() const { return coreAssigned; }
@@ -34,11 +34,11 @@ public:
     void setCoreAssigned(int core) { coreAssigned = core; };
 
 private:
-    //std::string processName;          // Name of the process
+    int processCurCycle;
     std::mutex mtx;                     // Mutex for thread safety
     int processID;                      // ID of the process
-    int currLineOfInstruction;          // Current line of instruction
-    int totalLineOfInstruction;         // Total lines of instruction
+    long long currLineOfInstruction;    // Current line of instruction
+    long long totalLineOfInstruction;   // Total lines of instruction
     std::string timeCreated;            // Time when the process was created
     int coreAssigned;                   // Core assigned to execution of process
 

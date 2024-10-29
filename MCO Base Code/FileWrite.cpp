@@ -25,7 +25,7 @@ void FileWrite::generateFile(int processID, const std::string& processName, cons
         }
 
         outFile.close();
-        std::cerr << "File saved to: " << fileName << std::endl;  // Inform where the file is saved
+        //std::cerr << "\nFile saved to: " << fileName << std::endl;  // Inform where the file is saved
     }
     else {
         std::cerr << "Error: Could not open file " << fileName << std::endl;
