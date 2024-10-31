@@ -382,6 +382,16 @@ void MainConsole::process() {
                 std::cout << "(2) screen -r <process name> \tTo view the details of an created proces" << std::endl;
                 std::cout << "(3) screen -ls \t\t\tTo view unfinish and finish processes\n" << std::endl;
             }
+            // Start schedule test
+            std::cout << "> Creating dummy processes" << std::endl;
+            ConsoleManager::getInstance()->schedulerTest(batchProcessFreq, minimumIns, maximumIns);
+            }
+            else if (command == "scheduler-stop") {
+             // Stop schedule test
+                std::cout << "> Stopping creation of dummy processes" << std::endl;
+                ConsoleManager::getInstance()->schedulerTestStop();
+            }
+
             else if (command == "report-util") {
                 ConsoleManager::getInstance()->listFinishedProcesses(true); // set WriteToFile as true 
                 std::cout << "Report generated at C:/csopesy-log.txt!" << std::endl;
@@ -393,6 +403,3 @@ void MainConsole::process() {
         }
         
     }
-
-
-}

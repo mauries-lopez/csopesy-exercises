@@ -6,6 +6,7 @@
 #include <thread>
 #include <fstream>
 #include "ScheduleWorker.h"
+#include <random>
 
 int ScheduleWorker::usedCores = 0;
 int ScheduleWorker::availableCores = 0;
@@ -124,6 +125,78 @@ void ConsoleManager::addFinishedProcess(Process* process) {
 	}
 
 	finishedProcesses.push_back(process);
+}
+
+bool ConsoleManager::createProcess(const std::string& processName, long long randomInstructions) {
+	std::lock_guard<std::mutex> lock(processMutex);
+
+	// Check if process exists in unfinished list
+	if (std::any_of(unfinishedProcessList.begin(), unfinishedProcessList.end(),
+		[&processName](Process* p) { return p->getName() == processName; })) {
+		std::cout << "> Process " << processName << " already exists." << std::endl;
+		return false;
+	}
+
+	time_t currTime;
+	char timeCreation[50];
+	struct tm datetime;
+	time(&currTime);
+	localtime_s(&datetime, &currTime);
+	strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
+	std::string timeCreated = timeCreation;
+
+	// Create new process
+	auto newProcess = std::make_shared<Process>(processName, processID++, randomInstructions, timeCreated);
+
+	// Check for available core and assign
+	int assignedCore = scheduler.assignCore();
+	if (assignedCore != -1) {
+		newProcess->setCoreAssigned(assignedCore);
+		std::cout << "Process " << processName << " assigned to core " << assignedCore << std::endl;
+	}
+	else {
+		std::cout << "No Available Core. Process " << processName << " is queued." << std::endl;
+	}
+
+	// Add new process to the list, start scheduling
+	unfinishedProcessList.push_back(newProcess.get());
+	std::thread processThread(&ScheduleWorker::scheduleProcess, &scheduler, newProcess);
+	processThread.detach(); // Detach the thread 
+
+	return true;
+}
+
+
+void ConsoleManager::schedulerTest(long long batchProcessFreq, long long minIns, long long maxIns) {
+	std::thread([this, batchProcessFreq, minIns, maxIns] {
+		schedulerTestRun = true;
+
+		int cpuCycles = 1;
+		int processIndex = 1;
+
+		std::random_device rd;
+		std::mt19937_64 gen(rd());
+		std::uniform_int_distribution<long long> dis(minIns, maxIns);
+
+		while (schedulerTestRun) {
+			// Create new process at every batch frequency
+			if (cpuCycles % batchProcessFreq == 0) {
+				std::string processName = "process" + std::to_string(processIndex);
+
+				// Random instruct for minIns and maxIns range
+				long long randomInstructions = dis(gen);
+
+				// Call createProcess with the generated process name and instructions
+				createProcess(processName, randomInstructions);
+				std::cout << "Created " << processName << " with " << randomInstructions << " instructions." << std::endl;
+
+				processIndex++;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Delay the loop for 100ms per cycle, can change
+
+			cpuCycles++;
+		}
+		}).detach();
 }
 
 void ConsoleManager::listFinishedProcesses(bool writeToFile) {

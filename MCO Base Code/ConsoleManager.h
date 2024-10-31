@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include "TypedefRepo.h"
 #include "BaseScreen.h"
+#include "ScheduleWorker.h" 
 
 const String MAIN_CONSOLE = "MAIN_CONSOLE";
 
@@ -47,7 +48,15 @@ public:
 
 	void setCursorPosition(int posX, int posY) const;
 
+	void schedulerTest(long long batchProcessFreq, long long minIns, long long maxIns);
+	void schedulerTestStop() { schedulerTestRun = false; }
+	//void createProcess(const std::string& processName, long long randomInstructions);
+	bool createProcess(const std::string& processName, long long randomInstructions);
+
+	static int processID;
+
 private:
+	ScheduleWorker scheduler;
 	ConsoleManager();
 	~ConsoleManager() = default;
 	ConsoleManager(ConsoleManager const&) {};
@@ -57,7 +66,9 @@ private:
 	ConsoleTable consoleTable;
 	std::shared_ptr<AConsole> currentConsole;
 	std::shared_ptr<AConsole> previousConsole;
+	std::mutex processMutex;
 
 	HANDLE consoleHandle;
 	bool running = true;
+	bool schedulerTestRun = false;
 };
