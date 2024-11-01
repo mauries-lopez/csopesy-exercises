@@ -46,6 +46,7 @@ public:
 	HANDLE getConsoleHandle() const;
 
 	void setCursorPosition(int posX, int posY) const;
+	Process* getProcessByName(const std::string& processName) const; 
 
 private:
 	ConsoleManager();

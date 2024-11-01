@@ -18,7 +18,8 @@ namespace fs = std::filesystem;
 int processID = 0; // This could be generated dynamically
 std::vector <std::string> processesNameList;
 bool isInitialized = false;
-
+static bool inSession = false;
+static std::string currentSessionName = "";
 // Core Related
 std::vector<int> ScheduleWorker::cores;
 bool anyAvailableCore = false;
@@ -180,53 +181,53 @@ void MainConsole::process() {
             ///////////////////////////////////////////////////////////////////////////////////////////////////
             // 10 Process after Intializing... Temporary
             
-            for (int i = 0; i < 10; i++) {
-                if (!testRun) {
-                    // Get current time
-                    time_t currTime;
-                    char timeCreation[50];
-                    struct tm datetime;
-                    time(&currTime);
-                    localtime_s(&datetime, &currTime);
-                    strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
+            //for (int i = 0; i < 10; i++) {
+            //    if (!testRun) {
+            //        // Get current time
+            //        time_t currTime;
+            //        char timeCreation[50];
+            //        struct tm datetime;
+            //        time(&currTime);
+            //        localtime_s(&datetime, &currTime);
+            //        strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
 
-                    string timeCreated = (string)timeCreation;
+            //        string timeCreated = (string)timeCreation;
 
-                    std::string processName = "process" + std::to_string(i);
+            //        std::string processName = "process" + std::to_string(i);
 
-                    std::random_device rd;
-                    std::mt19937_64 gen(rd());  // Use 64-bit version of Mersenne Twister
-                    std::uniform_int_distribution<long long> dis(this->minimumIns, this->maximumIns);
-                    long long random_value = dis(gen);
+            //        std::random_device rd;
+            //        std::mt19937_64 gen(rd());  // Use 64-bit version of Mersenne Twister
+            //        std::uniform_int_distribution<long long> dis(this->minimumIns, this->maximumIns);
+            //        long long random_value = dis(gen);
 
-                    shared_ptr<Process> process = make_shared<Process>(processName, i, random_value, timeCreated);
+            //        shared_ptr<Process> process = make_shared<Process>(processName, i, random_value, timeCreated);
 
-                    processesNameList.push_back(processName); //Para di matake ulit ung name
+            //        processesNameList.push_back(processName); //Para di matake ulit ung name
 
-                    shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
-                    ConsoleManager::getInstance()->registerScreen(baseScreen);
+            //        shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
+            //        ConsoleManager::getInstance()->registerScreen(baseScreen);
 
-                    // Check for available cores
-                    for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
-                        if (ScheduleWorker::cores[i] == -1) {
-                            anyAvailableCore = true;
-                            break;
-                        }
-                        else {
-                            anyAvailableCore = false;
-                        }
-                    }
+            //        // Check for available cores
+            //        for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
+            //            if (ScheduleWorker::cores[i] == -1) {
+            //                anyAvailableCore = true;
+            //                break;
+            //            }
+            //            else {
+            //                anyAvailableCore = false;
+            //            }
+            //        }
 
-                    // addProcess if there is available core
-                    if (anyAvailableCore) {
-                        ScheduleWorker::addProcess(process);
-                    }
-                    else { // add to waiting queue if no available core
-                        ScheduleWorker::addWaitProcess(process);
-                    }
+            //        // addProcess if there is available core
+            //        if (anyAvailableCore) {
+            //            ScheduleWorker::addProcess(process);
+            //        }
+            //        else { // add to waiting queue if no available core
+            //            ScheduleWorker::addWaitProcess(process);
+            //        }
 
-                }
-            }
+            //    }
+            //}
 
             testRun = true;
             
@@ -236,6 +237,7 @@ void MainConsole::process() {
 
         }
         else if (command == "exit") {
+            std::cerr << "Exiting emulator..." << std::endl;
             ConsoleManager::getInstance()->exitApplication();
         }
         else {
@@ -250,6 +252,18 @@ void MainConsole::process() {
             if (command == "screen" && !prefix.empty()) {
 
                 if (prefix == "-s" && !processName.empty()) {
+
+                    if (command == "process-smi") {
+                        Process* process = ConsoleManager::getInstance()->getProcessByName(processName);
+                        if (process) {
+                            process->processSMI(); 
+                            return;
+                        }
+                        else {
+                            std::cerr << "Error: Process '" << processName << "' not found." << std::endl;
+                            return;
+                        }
+                    }
 
                     //If there are any available cores, proceed. Else, error.
                     //Check if there are any available cores
@@ -350,8 +364,8 @@ void MainConsole::process() {
                             std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
                         }
                     }
-
                 }
+
 
                 else if (prefix == "-s" && processName.empty()) {
                     ConsoleManager::getInstance()->nullProcessName();
@@ -381,6 +395,10 @@ void MainConsole::process() {
                 std::cout << "(1) screen -s <process name> \tTo create a new process" << std::endl;
                 std::cout << "(2) screen -r <process name> \tTo view the details of an created proces" << std::endl;
                 std::cout << "(3) screen -ls \t\t\tTo view unfinish and finish processes\n" << std::endl;
+                std::cout << "(4) schedule-test \t\t\tTo genarate batch dummy processes\n" << std::endl;
+                std::cout << "(5) schedule-stop \t\t\tTo stop generating processes\n" << std::endl;
+                std::cout << "(6) report-util \t\t\tTo view unfinish and finish processes\n" << std::endl;
+                std::cout << "(7) exit \t\t\tTo exit emulator\n" << std::endl;
             }
             else if (command == "report-util") {
                 ConsoleManager::getInstance()->listFinishedProcesses(true); // set WriteToFile as true 

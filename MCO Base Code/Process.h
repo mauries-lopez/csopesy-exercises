@@ -33,6 +33,9 @@ public:
     // Setter for core
     void setCoreAssigned(int core) { coreAssigned = core; };
 
+    Process* getProcessByName(const std::string& processName) const;
+    void processSMI() const;
+
 private:
     int processCurCycle;
     std::mutex mtx;                     // Mutex for thread safety

@@ -17,20 +17,14 @@ void Process::incrementLine(int core) {
 
     ConsoleManager::getInstance()->unfinishedProcessList.push_back(this);
 
-    long long i = this->currLineOfInstruction;
-
-    do {
-        
-        // If process is not sync -> cpu already iterated. Hence, need to do 1 round of work then sync
+    while (true) {
         if (this->processCurCycle != MainConsole::curClockCycle) {
-
-            // End Case
-            if (i > this->totalLineOfInstruction) {
+            if (currLineOfInstruction >= totalLineOfInstruction) {
                 break;
             }
 
             std::lock_guard<std::mutex> lock(mtx);
-            // Get current time
+
             time_t currTime;
             char timeCreation[50];
             struct tm datetime;
@@ -39,33 +33,33 @@ void Process::incrementLine(int core) {
             strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
 
             this->setCoreAssigned(core);
-            std::string timeCreated = "Executed line at timestamp: (" + (std::string)timeCreation + ")"; // timestamp of execution
-            std::string coreUsed = "Core: " + std::to_string(coreAssigned); // associated core
-            std::string printExec = "Hello World from " + processName; // Create Print Statement (execution)
-            std::string log = timeCreated + "   " + coreUsed + "   " + printExec;
-            printLogs.push_back(log); // Put print statement to printLogs
-            this->currLineOfInstruction = i;
-            i++;
-            //std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+            currLineOfInstruction++;
             this->processCurCycle = MainConsole::curClockCycle;
         }
+    }
 
-        
-    } while (true);
-
-    if (this->isFinished()) {
-        
-        // If process is finish, let core be available again
+    if (currLineOfInstruction >= totalLineOfInstruction) {
         ScheduleWorker::cores[coreAssigned] = -1;
         ConsoleManager::getInstance()->addFinishedProcess(this);
         FileWrite::generateFile(processID, processName, getTimeCreated(), printLogs);
         ScheduleWorker::usedCores--;
-
-        //TO-DO:: Remove Process' BaseScreen
-
     }
-    
 }
+
+void Process::processSMI() const {
+    std::cout << "Process Name: " << processName << std::endl;
+    std::cout << "ID: " << processID << std::endl;
+    std::cout << "Current Line of Instruction: " << currLineOfInstruction << "/" << totalLineOfInstruction << std::endl;
+
+    if (currLineOfInstruction >= totalLineOfInstruction) {
+        std::cout << "Status: Finished" << std::endl;
+    }
+    else {
+        std::cout << "Status: Running" << std::endl;
+    }
+}
+
 
 std::vector<std::string> Process::getPrintLogs() {
     if (!printLogs.empty()) {

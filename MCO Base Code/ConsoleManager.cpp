@@ -42,6 +42,21 @@ void ConsoleManager::process() const {
 	}
 }
 
+Process* ConsoleManager::getProcessByName(const std::string& processName) const {
+	for (const auto& process : unfinishedProcessList) {
+		if (process->getName() == processName) {
+			return process;
+		}
+	}
+
+	for (const auto& process : finishedProcesses) {
+		if (process->getName() == processName) {
+			return process;
+		}
+	}
+	return nullptr;
+}
+
 void ConsoleManager::switchConsole(String consoleName) {
 	if (this->consoleTable.contains(consoleName)) {
 		// Clear the screen
