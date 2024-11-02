@@ -7,6 +7,7 @@
 #include <Windows.h>
 #include "MainConsole.h"
 #include <random>
+#include <cstdlib> // for malloc, free
 
 using namespace std;
 
@@ -20,6 +21,7 @@ long long MainConsole::maximumIns = 0;
 std::vector <std::string> MainConsole::processesNameList;
 bool testAnyAvailableCore = false;
 long long MainConsole::batchProcessFreq = 0;
+long long MainConsole::quantumCycles = 0;
 
 
 ScheduleWorker::ScheduleWorker() {
@@ -38,7 +40,8 @@ void ScheduleWorker::initialize(int numCores) {
     this->initializeCores(numCores);
 
     //Make a thread for the scheduler so it can constantly check for processes
-    std::thread scheduleThread(&ScheduleWorker::scheduleProcess, this);
+    //std::thread scheduleThread(&ScheduleWorker::scheduleProcess, this);
+    std::thread scheduleThread(&ScheduleWorker::roundRobin, this, MainConsole::quantumCycles);
 
     //Detach it
     scheduleThread.detach();
@@ -93,6 +96,75 @@ void ScheduleWorker::scheduleProcess() {
             Sleep(100);
         }
 
+    }
+}
+
+void ScheduleWorker::roundRobin(int quantumCycles) {
+    // Pause for a moment (This is necessary so that it will start checking on CPU #0 upon initialized)
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
+    // Round robin algorithm
+    int i = 0;
+    int cycleCount = 0;
+    while (true) {
+        if (this->schedulerCurCycle != MainConsole::curClockCycle) {
+            // If all cores are checked, recheck all again.
+            if (i == cores.size()) {
+                i = 0;
+            }
+            if (!processList.empty()) {
+                if (cores[i] == -1) { // Found available core
+                    this->coreAssigned = i;
+                    // Set core to busy
+                    cores[i] = 1;
+                    // Add count of used cores
+                    usedCores++;
+                    // Associate core to process     
+                    /*std::thread processIncrementLine(&Process::incrementLine, processList.front(), coreAssigned);*/
+                    // Run the process for quantumCycle amount of times (tracker is cycleCount)
+                    while (cycleCount < quantumCycles) {
+                        // if process is not completely executed, keep executing until cycleCount == quantumCycle (cycleCount++)
+                        if (processList.front()->getCurrentLine() < processList.front()->getTotalLines()) {
+                            //processIncrementLine.detach(); // Execute incrementLine() once only [WILL NOT WORK! PROBABLY! MOST LIKELY! change it to more appropriate line] <-- Does not work (invalid argument)
+                            // Execute incrementLine() once only
+                            processList.front()->incrementLine(this->coreAssigned);
+                        }
+                        else { // else if process is completely executed, call processList.front() to execute until cycleCount == quantumCycle (cycleCount++)
+                            processList.erase(processList.begin());
+                            // Add to processList the process at the top of waitingQueue
+                            if (!waitingQueue.empty()) {
+                                processList.push_back(waitingQueue.front());
+                            }
+                        }
+                        cycleCount++;
+                    }
+                    // After running for set interval (cycleCount == quantumCycle)
+                    // if process is not completely executed, add process to end of wait queue (reset cycleCount = 0)
+                    if (processList.front()->getCurrentLine() < processList.front()->getTotalLines()) {
+                        // Add process to waitingQueue
+                        waitingQueue.push_back(processList.front());
+                        // Empty processList
+                        processList.erase(processList.begin());
+                        // Reset cycleCount
+                        cycleCount = 0;
+                    }
+                    else { // else if process is completely executed, call processList.front() to execute (reset cycleCount = 0) ??
+                        processList.erase(processList.begin());
+                        // Add to processList the process at the top of waitingQueue
+                        if (!waitingQueue.empty()) {
+                            processList.push_back(waitingQueue.front());
+                        }
+                        // Reset cycleCount
+                        cycleCount = 0;
+                    }
+
+                }
+            }
+
+
+            this->schedulerCurCycle = MainConsole::curClockCycle;
+            Sleep(100);
+        }
     }
 }
 

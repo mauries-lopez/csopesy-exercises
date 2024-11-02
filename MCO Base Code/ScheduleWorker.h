@@ -13,6 +13,7 @@ public:
     static void addProcess(std::shared_ptr<Process> process);
     static void addWaitProcess(std::shared_ptr<Process> process);
     void scheduleProcess();
+    void roundRobin(int quantumCycles);
     void displaySchedule() const;
 
     static int usedCores;                 

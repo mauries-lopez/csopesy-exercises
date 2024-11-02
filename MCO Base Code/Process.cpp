@@ -71,7 +71,7 @@ void Process::incrementLine(int core) {
     {
         std::lock_guard<std::mutex> lock(mtx); // Lock for modifying shared resources
         if (currLineOfInstruction >= totalLineOfInstruction) {
-            ScheduleWorker::cores[coreAssigned] = -1; // Mark the core as available
+            ScheduleWorker::cores[this->coreAssigned] = -1; // Mark the core as available
             ConsoleManager::getInstance()->addFinishedProcess(this);
             FileWrite::generateFile(processID, processName, getTimeCreated(), printLogs);
             ScheduleWorker::usedCores--;

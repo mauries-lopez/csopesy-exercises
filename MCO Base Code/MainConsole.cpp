@@ -110,10 +110,30 @@ void MainConsole::process() {
 
                 }
                 else if (parameter == "scheduler") {
-
+                    std::cout << "value: " << value << std::endl;
+                    if (value == "\"fcfs\"" || value == "\"rr\"") {
+                        if (value == "\"fcfs\"") {
+                            this->scheduler = "fcfs";
+                        }
+                        else if (value == "\"rr\"") {
+                            this->scheduler = "rr";
+                        }
+                    }
+                    else {
+                        std::cerr << "The given scheduler is not available. Please pick \"fcfs\" or \"rr\" only." << std::endl;
+                        isInitialized = false;
+                    }
                 }
                 else if (parameter == "quantum-cycles") {
+                    long long cycles = std::stoll(value);
 
+                    if (cycles >= 1 && cycles <= 4294967296) {
+                        this->quantumCycles = cycles;
+                    }
+                    else {
+                        std::cerr << "The given number of quantum cycles is in the invalid range. The range is [1,2^32] only." << std::endl;
+                        isInitialized = false;
+                    }
                 }
                 else if (parameter == "batch-process-freq") {
                     long long frequency = std::stoll(value);
@@ -237,6 +257,7 @@ void MainConsole::process() {
             ///////////////////////////////////////////////////////////////////////////////////////////////////
 
             std::cerr << "System successfully initialized." << std::endl;
+            std::cout << "scheduler: " << this->scheduler << std::endl; // debugging std::cout, to remove
 
         }
         else if (command == "exit") {
