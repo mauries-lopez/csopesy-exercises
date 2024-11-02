@@ -13,15 +13,16 @@ public:
 	void onEnabled() override;
 
 	// Other Variables (For Whole System)
-	long long batchProcessFreq = 0;
+	static long long batchProcessFreq;
 	static int curClockCycle;
 	static int totalNumCores;
 
 	// Other Variables (For Process)
-	long long minimumIns = 0;
-	long long maximumIns = 0;
-	long long delaysPerExec = 0;
+	static long long minimumIns;
+	static long long maximumIns;
+	static long long delaysPerExec;
 
+	static std::vector <std::string> processesNameList;
 
 private:
 	bool refresh;

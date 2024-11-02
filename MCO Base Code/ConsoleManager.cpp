@@ -162,8 +162,10 @@ void ConsoleManager::listFinishedProcesses(bool writeToFile) {
 	// Compute CPU Utilization
 	int cpuUtilPercent = (static_cast<float>(ScheduleWorker::usedCores) / MainConsole::totalNumCores) * 100;
 	int availCores = abs((ScheduleWorker::usedCores - ScheduleWorker::availableCores));
-	*outStream << "\nCPU utilization: " << cpuUtilPercent << "%/100%" << "\nCores used: " << ScheduleWorker::usedCores << "\nCores available: " << availCores << "\n\n" << std::endl;
+	*outStream << "\nCPU utilization: " << cpuUtilPercent << "%/100%" << "\nCores used: " << ScheduleWorker::usedCores << "\nCores available: " << availCores << "\n" << std::endl;
 
+
+	*outStream << "--------------------------------------\n";
 	*outStream << "Running Processes:" << std::endl;
 	for (const auto& process : unfinishedProcessList) {
 		*outStream << process->getName() // Process Name
@@ -174,17 +176,15 @@ void ConsoleManager::listFinishedProcesses(bool writeToFile) {
 			<< std::endl;
 	}
 
-	std::cout << "\n\n";
-
-	*outStream << "\n\nFinished Processes:" << std::endl;
+	*outStream << "\nFinished Processes:" << std::endl;
 	for (const auto& process : finishedProcesses) {
 		*outStream << process->getName() 
 			<< "\t" << "(" << process->getTimeCreated() << ")" // Timestamp of time created
-			<< "\t" << "Core: " << process->getCoreAssigned() // Core that worked on process
+			<< "\t\t" << "Finished"
 			<< "\t" << process->getCurrentLine() << " / " << process->getTotalLines() // Current line / total line of execution
-			<< ", Finished: " << (process->isFinished() ? "Yes" : "No")
 			<< std::endl;
 	}
+	*outStream << "--------------------------------------\n";
 
 	if (writeToFile) {
 		logFile.close();

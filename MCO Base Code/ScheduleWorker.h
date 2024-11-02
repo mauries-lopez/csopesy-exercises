@@ -21,9 +21,15 @@ public:
     static std::vector<int> cores;
     int coreAssigned;
 
+    static void testSchedule();
+    static int schedulerCurCycle;
+
+    static bool stopTest;
+
 private:
-    int schedulerCurCycle;
+
     void initializeCores(int numCores);
     static std::vector<std::shared_ptr<Process>> processList;
     static std::vector<std::shared_ptr<Process>> waitingQueue;
+    
 };

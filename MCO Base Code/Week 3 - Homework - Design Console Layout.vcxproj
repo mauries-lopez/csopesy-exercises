@@ -131,6 +131,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BaseScreen.cpp" />
+    <ClCompile Include="CommandExecuter.cpp" />
     <ClCompile Include="ConsoleManager.cpp" />
     <ClCompile Include="FileWrite.cpp" />
     <ClCompile Include="main.cpp" />
@@ -141,6 +142,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseScreen.h" />
+    <ClInclude Include="CommandExecuter.h" />
     <ClInclude Include="ConsoleManager.h" />
     <ClInclude Include="FileWrite.h" />
     <ClInclude Include="MainConsole.h" />

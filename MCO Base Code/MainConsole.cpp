@@ -16,10 +16,13 @@ using namespace std; //To not specify the prefix (std::<syntax>)
 namespace fs = std::filesystem;
 
 int processID = 0; // This could be generated dynamically
-std::vector <std::string> processesNameList;
 bool isInitialized = false;
 static bool inSession = false;
 static std::string currentSessionName = "";
+
+int ScheduleWorker::schedulerCurCycle = 0;
+bool ScheduleWorker::stopTest = false;
+
 // Core Related
 std::vector<int> ScheduleWorker::cores;
 bool anyAvailableCore = false;
@@ -77,7 +80,7 @@ void MainConsole::process() {
     istringstream stream(main_CommandInput);
     string command, prefix, processName;
     stream >> command >> prefix >> processName;
-    
+
     if (isInitialized == false) {
         if (command == "initialize") {
 
@@ -107,7 +110,7 @@ void MainConsole::process() {
 
                 }
                 else if (parameter == "scheduler") {
-                    
+
                 }
                 else if (parameter == "quantum-cycles") {
 
@@ -128,7 +131,7 @@ void MainConsole::process() {
                         std::cerr << "The given number of Batch Process Frequency is in the invalid range. The range is [1,2^32] only." << std::endl;
                         isInitialized = false;
                     }
-                    
+
                 }
                 else if (parameter == "min-ins") {
                     long long minIns = std::stoll(value);
@@ -140,7 +143,7 @@ void MainConsole::process() {
                         std::cerr << "The given number of Minimum Instruction/s is in the invalid range. The range is [1,2^32] only." << std::endl;
                         isInitialized = false;
                     }
-                    
+
                 }
                 else if (parameter == "max-ins") {
                     long long maxIns = std::stoll(value);
@@ -180,7 +183,7 @@ void MainConsole::process() {
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////
             // 10 Process after Intializing... Temporary
-            
+
             //for (int i = 0; i < 10; i++) {
             //    if (!testRun) {
             //        // Get current time
@@ -229,8 +232,8 @@ void MainConsole::process() {
             //    }
             //}
 
-            testRun = true;
-            
+            //testRun = true;
+
             ///////////////////////////////////////////////////////////////////////////////////////////////////
 
             std::cerr << "System successfully initialized." << std::endl;
@@ -252,19 +255,6 @@ void MainConsole::process() {
             if (command == "screen" && !prefix.empty()) {
 
                 if (prefix == "-s" && !processName.empty()) {
-
-                    if (command == "process-smi") {
-                        Process* process = ConsoleManager::getInstance()->getProcessByName(processName);
-                        if (process) {
-                            process->processSMI(); 
-                            return;
-                        }
-                        else {
-                            std::cerr << "Error: Process '" << processName << "' not found." << std::endl;
-                            return;
-                        }
-                    }
-
                     //If there are any available cores, proceed. Else, error.
                     //Check if there are any available cores
                     for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
@@ -394,23 +384,31 @@ void MainConsole::process() {
                 std::cout << "List of Screen Commands:" << std::endl;
                 std::cout << "(1) screen -s <process name> \tTo create a new process" << std::endl;
                 std::cout << "(2) screen -r <process name> \tTo view the details of an created proces" << std::endl;
-                std::cout << "(3) screen -ls \t\t\tTo view unfinish and finish processes\n" << std::endl;
-                std::cout << "(4) schedule-test \t\t\tTo genarate batch dummy processes\n" << std::endl;
-                std::cout << "(5) schedule-stop \t\t\tTo stop generating processes\n" << std::endl;
-                std::cout << "(6) report-util \t\t\tTo view unfinish and finish processes\n" << std::endl;
+                std::cout << "(3) screen -ls \t\t\tTo view unfinish and finish processes" << std::endl;
+                std::cout << "(4) schedule-test \t\tTo genarate batch dummy processes" << std::endl;
+                std::cout << "(5) schedule-stop \t\tTo stop generating processes" << std::endl;
+                std::cout << "(6) report-util \t\tTo view unfinish and finish processes" << std::endl;
                 std::cout << "(7) exit \t\t\tTo exit emulator\n" << std::endl;
             }
             else if (command == "report-util") {
                 ConsoleManager::getInstance()->listFinishedProcesses(true); // set WriteToFile as true 
-                std::cout << "Report generated at C:/csopesy-log.txt!" << std::endl;
+                std::cout << "creReport generated at C:/csopesy-log.txt!" << std::endl;
+            }
+            else if (command == "scheduler-test") {
+                ScheduleWorker::stopTest = false;
+                std::thread testScheduleWorker(&ScheduleWorker::testSchedule);
+                testScheduleWorker.detach();
+            }
+            else if (command == "scheduler-stop") {
+                ScheduleWorker::stopTest = true;
+            }
+            else if (command == "exit") {
+                std::cerr << "Exiting emulator..." << std::endl;
+                ConsoleManager::getInstance()->exitApplication();
             }
             else {
                 std::cerr << command + " invalid command." << std::endl;
             }
-
         }
-        
     }
-
-
 }

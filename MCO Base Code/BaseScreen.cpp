@@ -32,11 +32,6 @@ void BaseScreen::printProcessInfo() const {
         << this->attachedProcess->getTotalLines() << std::endl;
     //(HH/DD/YYYY,HH:MM:SS AM/PM)
     std::cerr << "Created: " + this->attachedProcess->getTimeCreated() << std::endl; 
-    //Append the logs into one array to consitently display it.
-    std::vector<std::string> storePrintLogs = this->attachedProcess->getPrintLogs();
-    for (int i = 1; i < storePrintLogs.size(); i++) {
-        std::cerr << storePrintLogs[i] << std::endl;
-    }
 }
 
 void BaseScreen::baseScreenInput() {

@@ -6,9 +6,21 @@
 #include <mutex>
 #include <Windows.h>
 #include "MainConsole.h"
+#include <random>
+
+using namespace std;
+
+int testProcessID = 0; // This could be generated dynamically
 
 std::vector<std::shared_ptr<Process>> ScheduleWorker::processList;
 std::vector<std::shared_ptr<Process>> ScheduleWorker::waitingQueue;
+
+long long MainConsole::minimumIns = 0;
+long long MainConsole::maximumIns = 0;
+std::vector <std::string> MainConsole::processesNameList;
+bool testAnyAvailableCore = false;
+long long MainConsole::batchProcessFreq = 0;
+
 
 ScheduleWorker::ScheduleWorker() {
 
@@ -95,4 +107,77 @@ void ScheduleWorker::displaySchedule() const {
     for (const auto& process : processList) {
         std::cout << " - " << process->processName << std::endl;
     }
+}
+
+void ScheduleWorker::testSchedule() {
+
+    long long createProcessFreq = MainConsole::batchProcessFreq;
+
+    while (!stopTest) {
+        if (ScheduleWorker::schedulerCurCycle != MainConsole::curClockCycle) {
+            for (long long i = 0; i < createProcessFreq; i++) {
+                time_t currTime;
+                char timeCreation[50];
+                struct tm datetime;
+                time(&currTime);
+                localtime_s(&datetime, &currTime);
+                strftime(timeCreation, sizeof(timeCreation), "%m/%d/%Y %I:%M:%S%p", &datetime);
+
+                std::string timeCreated = (string)timeCreation;
+
+                std::string processName = "autogen_process" + std::to_string(testProcessID);
+
+                bool isProcessNameAvailable = true;
+                for (int i = 0; i < MainConsole::processesNameList.size(); i++) {
+                    if (processName == MainConsole::processesNameList[i]) {
+                        isProcessNameAvailable = false;
+                    }
+                }
+
+                if (isProcessNameAvailable) {
+                    std::random_device rd;
+                    std::mt19937_64 gen(rd());  // Use 64-bit version of Mersenne Twister
+                    std::uniform_int_distribution<long long> dis(MainConsole::minimumIns, MainConsole::maximumIns);
+                    long long random_value = dis(gen);
+
+                    shared_ptr<Process> process = make_shared<Process>(processName, testProcessID, random_value, timeCreated);
+
+                    MainConsole::processesNameList.push_back(processName); //Para di matake ulit ung name
+
+                    shared_ptr<BaseScreen> baseScreen = make_shared<BaseScreen>(process, processName);
+                    ConsoleManager::getInstance()->registerScreen(baseScreen);
+
+                    // Check for available cores
+                    for (int i = 0; i < ScheduleWorker::cores.size(); i++) {
+                        if (ScheduleWorker::cores[i] == -1) {
+                            testAnyAvailableCore = true;
+                            break;
+                        }
+                        else {
+                            testAnyAvailableCore = false;
+                        }
+                    }
+
+                    // addProcess if there is available core
+                    if (testAnyAvailableCore) {
+                        ScheduleWorker::addProcess(process);
+                    }
+                    else { // add to waiting queue if no available core
+                        ScheduleWorker::addWaitProcess(process);
+                    }
+
+                    testProcessID++;
+                    ScheduleWorker::schedulerCurCycle = MainConsole::curClockCycle;
+                }
+                else {
+                    std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
+                }
+
+                
+            }
+            
+        }
+    }
+    
+
 }
