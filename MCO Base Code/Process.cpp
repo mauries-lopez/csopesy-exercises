@@ -50,7 +50,22 @@ void Process::incrementLine(int core) {
                     printLogs.push_back(log); // Put print statement to printLogs
 
                     // Increment the current line of instruction and update the process cycle
-                    currLineOfInstruction++;
+                    if (MainConsole::scheduler == "fcfs") {
+                        currLineOfInstruction++;
+                    }
+                    else if (MainConsole::scheduler == "rr") {
+                        for (int i = 0; i < MainConsole::quantumCycles; i++) {
+
+                            if (currLineOfInstruction >= totalLineOfInstruction) {
+                                break; // Exit loop if done
+                            }
+                            else {
+                                currLineOfInstruction++;
+                            }
+                        }
+                        ConsoleManager::getInstance()->waitingProcess(this);
+                        break;
+                    }
                     this->processCurCycle = MainConsole::curClockCycle;
                 }
                 else {

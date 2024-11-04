@@ -143,6 +143,19 @@ void ConsoleManager::addFinishedProcess(Process* process) {
 	}
 }
 
+void ConsoleManager::waitingProcess(Process* process) {
+	for (int i = 0; i < unfinishedProcessList.size(); i++) {
+		if (unfinishedProcessList[i] == process) {
+			//Remove the process
+			unfinishedProcessList.erase(unfinishedProcessList.begin() + i);
+			break;
+		}
+	}
+	if (std::find(waitingProcesses.begin(), waitingProcesses.end(), process) == waitingProcesses.end()) {
+		waitingProcesses.push_back(process);
+	}
+}
+
 void ConsoleManager::listFinishedProcesses(bool writeToFile) {
 	std::ostream* outStream;
 	std::ofstream logFile;
@@ -166,6 +179,16 @@ void ConsoleManager::listFinishedProcesses(bool writeToFile) {
 	int availCores = abs((ScheduleWorker::usedCores - ScheduleWorker::availableCores));
 	*outStream << "\nCPU utilization: " << cpuUtilPercent << "%/100%" << "\nCores used: " << ScheduleWorker::usedCores << "\nCores available: " << availCores << "\n" << std::endl;
 
+	*outStream << "--------------------------------------\n";
+	*outStream << "Waiting Processes:" << std::endl;
+	for (const auto& process : waitingProcesses) {
+		*outStream << process->getName() // Process Name
+			<< "\t" << "(" << process->getTimeCreated() << ")" // Timestamp of time created
+			<< "\t" << "Core: " << process->getCoreAssigned() // Core that worked on process
+			<< "\t" << process->getCurrentLine() << " / " << process->getTotalLines() // Current line / total line of execution
+			//<< ", Unfinished: " << (process->isFinished() ? "Yes" : "No") // Unfinished? Y/N
+			<< std::endl;
+	}
 
 	*outStream << "--------------------------------------\n";
 	*outStream << "Running Processes:" << std::endl;

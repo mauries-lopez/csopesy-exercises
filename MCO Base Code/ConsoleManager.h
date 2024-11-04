@@ -39,8 +39,10 @@ public:
 	void exitApplication();
 	bool isRunning() const;
 	void addFinishedProcess(Process* process);
+	void waitingProcess(Process* process);
 	std::vector<Process*> unfinishedProcessList;
 	std::vector<Process*> finishedProcesses;
+	std::vector<Process*> waitingProcesses;
 	void listFinishedProcesses(bool writeToFile = false);
 
 	HANDLE getConsoleHandle() const;

@@ -15,6 +15,7 @@ public:
     static void addProcess(std::shared_ptr<Process> process);
     static void addWaitProcess(std::shared_ptr<Process> process);
     void scheduleProcess();
+    void roundRobin(int quantumCycles);
     void displaySchedule() const;
 
     static int usedCores;                 
@@ -29,11 +30,12 @@ public:
     static bool stopTest;
     static std::mutex schedulerMutex;  // Add this line
 
+    static std::vector<std::shared_ptr<Process>> processList;
+    static std::vector<std::shared_ptr<Process>> waitingQueue;
 
 private:
 
     void initializeCores(int numCores);
-    static std::vector<std::shared_ptr<Process>> processList;
-    static std::vector<std::shared_ptr<Process>> waitingQueue;
+    
 
 };

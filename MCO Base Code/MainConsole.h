@@ -16,8 +16,10 @@ public:
 	static long long batchProcessFreq;
 	static int curClockCycle;
 	static int totalNumCores;
+	static String scheduler;
 
 	// Other Variables (For Process)
+	static long long quantumCycles;
 	static long long minimumIns;
 	static long long maximumIns;
 	static long long delaysPerExec;
