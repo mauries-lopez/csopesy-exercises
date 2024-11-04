@@ -135,10 +135,12 @@ void ConsoleManager::addFinishedProcess(Process* process) {
 		if (unfinishedProcessList[i] == process) {
 			//Remove the process
 			unfinishedProcessList.erase(unfinishedProcessList.begin() + i);
+			break;
 		}
 	}
-
-	finishedProcesses.push_back(process);
+	if (std::find(finishedProcesses.begin(), finishedProcesses.end(), process) == finishedProcesses.end()) {
+		finishedProcesses.push_back(process);
+	}
 }
 
 void ConsoleManager::listFinishedProcesses(bool writeToFile) {

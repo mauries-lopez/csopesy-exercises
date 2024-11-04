@@ -45,6 +45,25 @@ void ScheduleWorker::initialize(int numCores) {
 }
 
 void ScheduleWorker::addProcess(std::shared_ptr<Process> process) {
+    std::string processName = process->getName();
+
+    for (const auto& existingProcess : processList) {
+        if (existingProcess->getName() == processName) {
+            return; 
+        }
+    }
+
+    for (const auto& waitingProcess : waitingQueue) {
+        if (waitingProcess->getName() == processName) {
+            return; 
+        }
+    }
+
+    for (const auto& finishedProcess : ConsoleManager::getInstance()->finishedProcesses) {
+        if (finishedProcess->getName() == processName) {
+            return; 
+        }
+    }
     processList.push_back(process);
 }
 
@@ -128,6 +147,31 @@ void ScheduleWorker::testSchedule() {
                 std::string processName = "autogen_process" + std::to_string(testProcessID);
 
                 bool isProcessNameAvailable = true;
+
+                // Check active processes
+                for (const auto& process : processList) {
+                    if (process->getName() == processName) {
+                        isProcessNameAvailable = false;
+                        break;
+                    }
+                }
+
+                // Check waiting queue
+                for (const auto& process : waitingQueue) {
+                    if (process->getName() == processName) {
+                        isProcessNameAvailable = false;
+                        break;
+                    }
+                }
+
+                // Check finished processes
+                for (const auto& process : ConsoleManager::getInstance()->finishedProcesses) {
+                    if (process->getName() == processName) {
+                        isProcessNameAvailable = false;
+                        break;
+                    }
+                }
+
                 for (int i = 0; i < MainConsole::processesNameList.size(); i++) {
                     if (processName == MainConsole::processesNameList[i]) {
                         isProcessNameAvailable = false;
@@ -167,11 +211,11 @@ void ScheduleWorker::testSchedule() {
                     }
 
                     testProcessID++;
-                    ScheduleWorker::schedulerCurCycle = MainConsole::curClockCycle;
                 }
                 else {
                     std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
                 }
+                ScheduleWorker::schedulerCurCycle = MainConsole::curClockCycle;
 
                 
             }
