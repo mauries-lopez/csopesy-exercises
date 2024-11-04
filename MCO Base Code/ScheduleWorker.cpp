@@ -20,6 +20,7 @@ long long MainConsole::maximumIns = 0;
 std::vector <std::string> MainConsole::processesNameList;
 bool testAnyAvailableCore = false;
 long long MainConsole::batchProcessFreq = 0;
+std::mutex ScheduleWorker::schedulerMutex;
 
 
 ScheduleWorker::ScheduleWorker() {
@@ -45,29 +46,18 @@ void ScheduleWorker::initialize(int numCores) {
 }
 
 void ScheduleWorker::addProcess(std::shared_ptr<Process> process) {
-    std::string processName = process->getName();
+    std::lock_guard<std::mutex> lock(schedulerMutex);
 
     for (const auto& existingProcess : processList) {
-        if (existingProcess->getName() == processName) {
-            return; 
-        }
-    }
-
-    for (const auto& waitingProcess : waitingQueue) {
-        if (waitingProcess->getName() == processName) {
-            return; 
-        }
-    }
-
-    for (const auto& finishedProcess : ConsoleManager::getInstance()->finishedProcesses) {
-        if (finishedProcess->getName() == processName) {
-            return; 
+        if (existingProcess->getName() == process->getName()) {
+            return; // to skip adding the duplicate process
         }
     }
     processList.push_back(process);
 }
 
 void ScheduleWorker::addWaitProcess(std::shared_ptr<Process> process) {
+    std::lock_guard<std::mutex> lock(schedulerMutex);
     waitingQueue.push_back(process);
 }
 
@@ -81,6 +71,7 @@ void ScheduleWorker::scheduleProcess() {
     while (true) {
 
         if (this->schedulerCurCycle != MainConsole::curClockCycle) {
+            std::lock_guard<std::mutex> lock(schedulerMutex);
             // If all cores are checked, recheck all again.
             if (i == cores.size()) {
                 i = 0;
@@ -122,6 +113,7 @@ void ScheduleWorker::initializeCores(int numCores) {
 }
 
 void ScheduleWorker::displaySchedule() const {
+    std::lock_guard<std::mutex> lock(schedulerMutex);
     std::cout << "Scheduled Processes:" << std::endl;
     for (const auto& process : processList) {
         std::cout << " - " << process->processName << std::endl;
@@ -147,31 +139,6 @@ void ScheduleWorker::testSchedule() {
                 std::string processName = "autogen_process" + std::to_string(testProcessID);
 
                 bool isProcessNameAvailable = true;
-
-                // Check active processes
-                for (const auto& process : processList) {
-                    if (process->getName() == processName) {
-                        isProcessNameAvailable = false;
-                        break;
-                    }
-                }
-
-                // Check waiting queue
-                for (const auto& process : waitingQueue) {
-                    if (process->getName() == processName) {
-                        isProcessNameAvailable = false;
-                        break;
-                    }
-                }
-
-                // Check finished processes
-                for (const auto& process : ConsoleManager::getInstance()->finishedProcesses) {
-                    if (process->getName() == processName) {
-                        isProcessNameAvailable = false;
-                        break;
-                    }
-                }
-
                 for (int i = 0; i < MainConsole::processesNameList.size(); i++) {
                     if (processName == MainConsole::processesNameList[i]) {
                         isProcessNameAvailable = false;
@@ -211,13 +178,12 @@ void ScheduleWorker::testSchedule() {
                     }
 
                     testProcessID++;
+                    ScheduleWorker::schedulerCurCycle = MainConsole::curClockCycle;
                 }
                 else {
                     std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
                 }
-                ScheduleWorker::schedulerCurCycle = MainConsole::curClockCycle;
-
-                
+                std::this_thread::sleep_for(std::chrono::milliseconds(80));  
             }
             
         }

@@ -3,6 +3,8 @@
 #include <memory>
 #include <deque>
 #include "Process.h" 
+#include <mutex>  // Add this include to use std::mutex
+
 
 class ScheduleWorker {
 public:
@@ -25,11 +27,13 @@ public:
     static int schedulerCurCycle;
 
     static bool stopTest;
+    static std::mutex schedulerMutex;  // Add this line
+
 
 private:
 
     void initializeCores(int numCores);
     static std::vector<std::shared_ptr<Process>> processList;
     static std::vector<std::shared_ptr<Process>> waitingQueue;
-    
+
 };

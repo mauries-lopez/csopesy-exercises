@@ -64,7 +64,7 @@ void Process::incrementLine(int core) {
             }
         } // Unlocks mtx when going out of scope
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     // After exiting the loop, handle the finishing process logic
@@ -73,7 +73,7 @@ void Process::incrementLine(int core) {
         if (currLineOfInstruction >= totalLineOfInstruction) {
             ScheduleWorker::cores[coreAssigned] = -1; // Mark the core as available
             ConsoleManager::getInstance()->addFinishedProcess(this);
-            FileWrite::generateFile(processID, processName, getTimeCreated(), printLogs);
+            //FileWrite::generateFile(processID, processName, getTimeCreated(), printLogs);
             ScheduleWorker::usedCores--;
         }
     }
