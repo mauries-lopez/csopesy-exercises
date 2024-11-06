@@ -9,6 +9,7 @@
 #include <mutex>
 
 long long MainConsole::delaysPerExec = 0;
+int ScheduleWorker::quantumCycleCounter = 0;
 
 Process::Process(const std::string& name, int id, long long totalLines, const std::string& timeCreated, int coreAssigned)
     : processName(name), processID(id), totalLineOfInstruction(totalLines),
@@ -55,7 +56,8 @@ void Process::incrementLine(int core) {
                     }
                     else if (MainConsole::scheduler == "rr") {
                         for (int i = 0; i < MainConsole::quantumCycles; i++) {
-
+                            // Track the current quantum cycle
+                            ScheduleWorker::quantumCycleCounter++; 
                             if (currLineOfInstruction >= totalLineOfInstruction) {
                                 break; // Exit loop if done
                             }
@@ -63,6 +65,8 @@ void Process::incrementLine(int core) {
                                 currLineOfInstruction++;
                             }
                         }
+                        // TODO: Something for handling ready queue stuff
+
                         ConsoleManager::getInstance()->waitingProcess(this);
                         break;
                     }

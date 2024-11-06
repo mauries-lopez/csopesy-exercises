@@ -27,6 +27,9 @@ public:
     static void testSchedule();
     static int schedulerCurCycle;
 
+    // cycle counter for RR
+    static int quantumCycleCounter;
+
     static bool stopTest;
     static std::mutex schedulerMutex;  // Add this line
 

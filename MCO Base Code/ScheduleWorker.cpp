@@ -119,9 +119,18 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
     // Pause for a moment (This is necessary so that it will start checking on CPU #0 upon initialized)
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
-    // Round robin algorithm
+    /* Round robin algorithm
+    RR Steps:
+        1. Assign to runningProcess the process at the top of the ready queue
+        2.1 If process is not completely executed, keep executing until quantumCycleCounter == quantumCycles
+        2.2 Else if process is completely executed and quantumCycleCounter < quantumCycles, get the process at
+            the top of the ready queue and continue executing from current quantumCycleCounter until quantumCycles
+        3. When quantumCycleCounter == quantumCycles
+        3.1 If process->currLineOfInstruction < totalLineOfInstruction, move process to the end of ready queue
+        4. Repeat steps (TODO: not implemented yet, probably issue with conditions)
+    */
     int i = 0;
-    int cycleCount = 0;
+    this->quantumCycleCounter = 0;
     std::shared_ptr<Process> runningProcess;
     while (true) {
         //std::vector<std::thread> rrThreads; // vector of processes to run concurrently
@@ -132,54 +141,32 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
             }
             if (!processList.empty()) {
                 if (cores[i] == -1) { // Found available core
-                    // Move current running process out of processList
-                    runningProcess = processList.front();
-                    processList.erase(processList.begin()); // pop
+                    // Core assignment
                     coreAssigned = i;
                     // Set core to busy
                     cores[i] = 1;
                     // Add count of used cores
                     usedCores++;
-                    // Associate core to process     
-                    //std::thread processIncrementLine(&Process::incrementLine, processList.front(), coreAssigned);
-                    // Run the process for quantumCycle amount of times (tracker is cycleCount)
-                    // Execute incrementLine() once only
-                    runningProcess->incrementLine(coreAssigned);
-                    if (runningProcess->getCurrentLine() < runningProcess->getTotalLines()) {
-                        // Add process to waitingQueue
-                        waitingQueue.push_back(runningProcess);
-                        //processList.erase(processList.begin()); // pop
-                        // Remove from unfinished process list
-                        //ConsoleManager::getInstance()->unfinishedProcessList.erase(ConsoleManager::unfinishedProcessList.begin());
-                        // Reset cycleCount
-                        //cycleCount = 0;
-                        /*this->schedulerCurCycle = MainConsole::curClockCycle;
-                        Sleep(100);*/
-                    }
-                    else { // else if process is completely executed, call processList.front() to execute (reset cycleCount = 0) ??
-                        //processList.erase(processList.begin());
-                        // Add to processList the process at the top of waitingQueue
-                        if (!waitingQueue.empty()) {
-                            processList.push_back(waitingQueue.front());
-                            waitingQueue.erase(waitingQueue.begin()); // pop
-                            //usedCores++;
+                    // RR proper
+                    // Check if process terminated through break (terminated when quantumCycleCounter < quantumCycles)
+                    while (this->quantumCycleCounter < quantumCycles) {
+                        if (!processList.empty()) {
+                            runningProcess = processList.front(); // Assign process at the top of ready queue
+                            processList.erase(processList.begin()); // Pop top of ready queue
+                            runningProcess->incrementLine(coreAssigned); // Run process again, until this->quantumCycleCounter >= quantumCycles
                         }
-                        // Reset cycleCount
-                        //cycleCount = 0;
-                        this->schedulerCurCycle = MainConsole::curClockCycle;
-                        //Sleep(100);
                     }
-                    // Finished process from incrementLine
-                    cores[coreAssigned] = -1; // Mark the core as available
-                    if (!waitingQueue.empty()) {
-                        processList.push_back(waitingQueue.front());
-                        waitingQueue.erase(waitingQueue.begin()); // pop
+                    // Process has not finished executing
+                    if (runningProcess->getCurrentLine() < runningProcess->getTotalLines()) {
+                        // Move process at the end of ready queue
+                        processList.push_back(runningProcess);
                     }
+                    // Reset quantumCycleCounter
+                    this->quantumCycleCounter = 0;
                 }
-                i++;
             }
 
-            //i++;
+            i++;
             this->schedulerCurCycle = MainConsole::curClockCycle;
             Sleep(100);
         }
