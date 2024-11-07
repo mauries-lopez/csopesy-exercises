@@ -4,6 +4,7 @@
 #include <deque>
 #include "Process.h" 
 #include <mutex>  // Add this include to use std::mutex
+#include <condition_variable>
 
 
 class ScheduleWorker {
@@ -39,6 +40,8 @@ public:
 private:
 
     void initializeCores(int numCores);
-    
+    std::condition_variable cv;
+    std::mutex concurrentThread;
+    int rrThreadsSize = 0;
 
 };

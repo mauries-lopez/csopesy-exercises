@@ -193,6 +193,15 @@ void MainConsole::process() {
                         isInitialized = false;
                     }
                 }
+                else if (parameter == "max-overall-mem") {
+                    this->maxOverallMem = std::stoll(value);
+                }
+                else if (parameter == "mem-per-frame") {
+                    this->memPerFrame = std::stoi(value);
+                }
+                else if (parameter == "mem-per-proc") {
+                    this->memPerProcess = std::stoll(value);
+                }
             }
             //std::cout << this->batchProcessFreq << std::endl;
             //std::cout << this->delaysPerExec << std::endl;

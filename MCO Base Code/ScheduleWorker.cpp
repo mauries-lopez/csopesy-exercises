@@ -7,6 +7,7 @@
 #include <Windows.h>
 #include "MainConsole.h"
 #include <random>
+#include <condition_variable>
 
 using namespace std;
 
@@ -131,18 +132,19 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
     */
     int i = 0;
     this->quantumCycleCounter = 0;
-    std::shared_ptr<Process> runningProcess;
+    std::shared_ptr<Process> runningProcess = nullptr;
     // Vector of threads of processes concurrently running
     std::vector<std::thread> rrThreads;
+    
 
     while (true) {
         //std::vector<std::thread> rrThreads; // vector of processes to run concurrently
         if (this->schedulerCurCycle != MainConsole::curClockCycle) {
-            // If all cores are checked, recheck all again.
-            if (i == cores.size()) {
-                i = 0;
-            }
-            if (!processList.empty()) {
+            while (!processList.empty()) {
+                // If all cores are checked, recheck all again.
+                if (i == cores.size()) {
+                    i = 0;
+                }
                 if (cores[i] == -1) { // Found available core
                     // Core assignment
                     coreAssigned = i;
@@ -157,29 +159,33 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
                         if (!processList.empty()) {
                             runningProcess = processList.front(); // Assign process at the top of ready queue
                             processList.erase(processList.begin()); // Pop top of ready queue
-                            // Create thread and push into rrThreads vector
+                            // Create thread and push into rrThreads vector ??
                             std::thread processIncrementLine(&Process::incrementLine, runningProcess, coreAssigned);
-                            rrThreads.push_back(std::move(processIncrementLine));
+                            processIncrementLine.join();
 
-                            processIncrementLine.detach(); // joining/detaching causes error
+                            //rrThreads.push_back(std::move(processIncrementLine));
+                            //rrThreads.back().detach();
 
                             // TODO: handling popping in rrThreads vector after process has finished running after
                             // running for quantumCycles amount of times or currLine == totalLine
                         }
+                        
                     }
                     // Process has not finished executing
                     if (runningProcess->getCurrentLine() < runningProcess->getTotalLines()) {
+                        std::lock_guard<std::mutex> lock(schedulerMutex);
                         // Move process at the end of ready queue
                         processList.push_back(runningProcess);
                     }
                     // Reset quantumCycleCounter
                     this->quantumCycleCounter = 0;
+                    // Mark core as available again
+                    cores[i] = -1;
                 }
+                i++;
+                this->schedulerCurCycle = MainConsole::curClockCycle;
+                Sleep(100);
             }
-
-            i++;
-            this->schedulerCurCycle = MainConsole::curClockCycle;
-            Sleep(100);
         }
     }
 }

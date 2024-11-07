@@ -67,7 +67,7 @@ void Process::incrementLine(int core) {
                         }
                         // TODO: Something for handling ready queue stuff
 
-                        ConsoleManager::getInstance()->waitingProcess(this);
+                        //ConsoleManager::getInstance()->waitingProcess(this);
                         break;
                     }
                     this->processCurCycle = MainConsole::curClockCycle;

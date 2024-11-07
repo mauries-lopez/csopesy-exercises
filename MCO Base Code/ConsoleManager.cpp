@@ -151,9 +151,9 @@ void ConsoleManager::waitingProcess(Process* process) {
 			break;
 		}
 	}
-	if (std::find(waitingProcesses.begin(), waitingProcesses.end(), process) == waitingProcesses.end()) {
+	/*if (std::find(waitingProcesses.begin(), waitingProcesses.end(), process) == waitingProcesses.end()) {
 		waitingProcesses.push_back(process);
-	}
+	}*/
 }
 
 void ConsoleManager::listFinishedProcesses(bool writeToFile) {
