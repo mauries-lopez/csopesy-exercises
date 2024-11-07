@@ -132,6 +132,9 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
     int i = 0;
     this->quantumCycleCounter = 0;
     std::shared_ptr<Process> runningProcess;
+    // Vector of threads of processes concurrently running
+    std::vector<std::thread> rrThreads;
+
     while (true) {
         //std::vector<std::thread> rrThreads; // vector of processes to run concurrently
         if (this->schedulerCurCycle != MainConsole::curClockCycle) {
@@ -147,13 +150,21 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
                     cores[i] = 1;
                     // Add count of used cores
                     usedCores++;
+
                     // RR proper
                     // Check if process terminated through break (terminated when quantumCycleCounter < quantumCycles)
                     while (this->quantumCycleCounter < quantumCycles) {
                         if (!processList.empty()) {
                             runningProcess = processList.front(); // Assign process at the top of ready queue
                             processList.erase(processList.begin()); // Pop top of ready queue
-                            runningProcess->incrementLine(coreAssigned); // Run process again, until this->quantumCycleCounter >= quantumCycles
+                            // Create thread and push into rrThreads vector
+                            std::thread processIncrementLine(&Process::incrementLine, runningProcess, coreAssigned);
+                            rrThreads.push_back(std::move(processIncrementLine));
+
+                            processIncrementLine.detach(); // joining/detaching causes error
+
+                            // TODO: handling popping in rrThreads vector after process has finished running after
+                            // running for quantumCycles amount of times or currLine == totalLine
                         }
                     }
                     // Process has not finished executing
