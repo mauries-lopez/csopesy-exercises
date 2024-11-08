@@ -6,6 +6,9 @@
 #include <thread>
 #include <fstream>
 #include "ScheduleWorker.h"
+#include <algorithm> 
+#include <iostream>
+
 
 int ScheduleWorker::usedCores = 0;
 int ScheduleWorker::availableCores = 0;
@@ -143,17 +146,40 @@ void ConsoleManager::addFinishedProcess(Process* process) {
 	}
 }
 
+std::vector<Process*> ConsoleManager::getProcessesInMemory() const {
+	return unfinishedProcessList;
+}
+int ConsoleManager::calculateExternalFragmentation(int maxMemory) const {
+	int fragmentation = 0;
+	int lastEndAddress = 0;
+	// If no processes are loaded, all memory is fragmented
+	if (unfinishedProcessList.empty()) {
+		return maxMemory;
+	}
+	// Sort processes by starting address
+	std::vector<Process*> sortedProcesses = unfinishedProcessList;
+	std::sort(sortedProcesses.begin(), sortedProcesses.end(), [](Process* a, Process* b) {
+		return a->getStartAddress() < b->getStartAddress();
+		});
+	// Calculate gaps between processes
+	for (const auto& process : sortedProcesses) {
+		fragmentation += process->getStartAddress() - lastEndAddress;
+		lastEndAddress = process->getEndAddress();
+	}
+	// Add remaining space after the last process
+	fragmentation += maxMemory - lastEndAddress;
+	return fragmentation;
+}
 void ConsoleManager::waitingProcess(Process* process) {
 	for (int i = 0; i < unfinishedProcessList.size(); i++) {
 		if (unfinishedProcessList[i] == process) {
-			//Remove the process
 			unfinishedProcessList.erase(unfinishedProcessList.begin() + i);
 			break;
 		}
 	}
-	/*if (std::find(waitingProcesses.begin(), waitingProcesses.end(), process) == waitingProcesses.end()) {
+	if (std::find(waitingProcesses.begin(), waitingProcesses.end(), process) == waitingProcesses.end()) {
 		waitingProcesses.push_back(process);
-	}*/
+	}
 }
 
 void ConsoleManager::listFinishedProcesses(bool writeToFile) {

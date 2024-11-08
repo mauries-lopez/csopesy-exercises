@@ -7,6 +7,8 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <ctime>
+#include <vector>
 
 long long MainConsole::delaysPerExec = 0;
 int ScheduleWorker::quantumCycleCounter = 0;
@@ -56,18 +58,15 @@ void Process::incrementLine(int core) {
                     }
                     else if (MainConsole::scheduler == "rr") {
                         for (int i = 0; i < MainConsole::quantumCycles; i++) {
-                            // Track the current quantum cycle
-                            ScheduleWorker::quantumCycleCounter++; 
+                            ScheduleWorker::quantumCycleCounter++;
                             if (currLineOfInstruction >= totalLineOfInstruction) {
-                                break; // Exit loop if done
+                                break;
                             }
                             else {
                                 currLineOfInstruction++;
                             }
                         }
-                        // TODO: Something for handling ready queue stuff
-
-                        //ConsoleManager::getInstance()->waitingProcess(this);
+                        ConsoleManager::getInstance()->waitingProcess(this);
                         break;
                     }
                     this->processCurCycle = MainConsole::curClockCycle;
@@ -78,6 +77,15 @@ void Process::incrementLine(int core) {
                     // Process in CPU but waits for "delay" to finish before executing
                     busyTime--;
                     this->processCurCycle = MainConsole::curClockCycle;
+
+                    // Memory snapshot file for every quantum cycle
+                    if (ScheduleWorker::quantumCycleCounter % MainConsole::quantumCycles == 0) {
+                        //// ******* Can be commented out later ******* 
+                        //std::cout << "Quantum cycle " << ScheduleWorker::quantumCycleCounter
+                        //    << " completed. Generating memory snapshot...\n";
+                        //// ******************************************
+                        generateMemorySnapshot(ScheduleWorker::quantumCycleCounter);
+                    }
                 } 
                
             }
@@ -117,4 +125,14 @@ std::vector<std::string> Process::getPrintLogs() {
         return printLogs;
     }
     return {};
+}
+
+void Process::generateMemorySnapshot(int quantumCycle) {
+    std::vector<Process*> processesInMemory = ConsoleManager::getInstance()->getProcessesInMemory();
+    // for debugging, can be commented out later
+    if (processesInMemory.empty()) {
+        std::cout << "No processes in memory during snapshot at quantum cycle " << quantumCycle << "\n";
+    }
+    int externalFragmentation = ConsoleManager::getInstance()->calculateExternalFragmentation(ConsoleManager::MAX_MEMORY);
+    FileWrite::generateMemorySnapshot(quantumCycle, processesInMemory, externalFragmentation);
 }
