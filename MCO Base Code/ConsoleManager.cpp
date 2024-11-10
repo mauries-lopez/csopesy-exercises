@@ -133,16 +133,21 @@ bool ConsoleManager::isRunning() const {
 }
 
 void ConsoleManager::addFinishedProcess(Process* process) {
-	
-	for (int i = 0; i < unfinishedProcessList.size(); i++) {
-		if (unfinishedProcessList[i] == process) {
-			//Remove the process
-			unfinishedProcessList.erase(unfinishedProcessList.begin() + i);
-			break;
-		}
+	// Remove the process from unfinishedProcessList
+	auto it_unfinished = std::find(unfinishedProcessList.begin(), unfinishedProcessList.end(), process);
+	if (it_unfinished != unfinishedProcessList.end()) {
+		unfinishedProcessList.erase(it_unfinished);
 	}
+
+	// Add process to finishedProcesses if not already present
 	if (std::find(finishedProcesses.begin(), finishedProcesses.end(), process) == finishedProcesses.end()) {
 		finishedProcesses.push_back(process);
+	}
+
+	// Remove the process from waitingProcesses
+	auto it_waiting = std::find(waitingProcesses.begin(), waitingProcesses.end(), process);
+	if (it_waiting != waitingProcesses.end()) {
+		waitingProcesses.erase(it_waiting);
 	}
 }
 
@@ -171,12 +176,16 @@ int ConsoleManager::calculateExternalFragmentation(int maxMemory) const {
 	return fragmentation;
 }
 void ConsoleManager::waitingProcess(Process* process) {
+
+	
 	for (int i = 0; i < unfinishedProcessList.size(); i++) {
 		if (unfinishedProcessList[i] == process) {
 			unfinishedProcessList.erase(unfinishedProcessList.begin() + i);
 			break;
 		}
 	}
+	
+
 	if (std::find(waitingProcesses.begin(), waitingProcesses.end(), process) == waitingProcesses.end()) {
 		waitingProcesses.push_back(process);
 	}
@@ -205,6 +214,7 @@ void ConsoleManager::listFinishedProcesses(bool writeToFile) {
 	int availCores = abs((ScheduleWorker::usedCores - ScheduleWorker::availableCores));
 	*outStream << "\nCPU utilization: " << cpuUtilPercent << "%/100%" << "\nCores used: " << ScheduleWorker::usedCores << "\nCores available: " << availCores << "\n" << std::endl;
 
+	
 	*outStream << "--------------------------------------\n";
 	*outStream << "Waiting Processes:" << std::endl;
 	for (const auto& process : waitingProcesses) {
@@ -215,6 +225,7 @@ void ConsoleManager::listFinishedProcesses(bool writeToFile) {
 			//<< ", Unfinished: " << (process->isFinished() ? "Yes" : "No") // Unfinished? Y/N
 			<< std::endl;
 	}
+	
 
 	*outStream << "--------------------------------------\n";
 	*outStream << "Running Processes:" << std::endl;

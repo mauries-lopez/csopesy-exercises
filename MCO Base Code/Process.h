@@ -46,6 +46,8 @@ public:
         endAddress = end;
     }
 
+    static long long busyTime;
+
 private:
     int processCurCycle;
     std::mutex mtx;                     // Mutex for thread safety

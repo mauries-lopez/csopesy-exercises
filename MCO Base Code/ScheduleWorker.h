@@ -30,12 +30,16 @@ public:
 
     // cycle counter for RR
     static int quantumCycleCounter;
+    static int runningRRProcessCount;
+    static std::vector<std::shared_ptr<Process>> runningRRProcessList;
 
     static bool stopTest;
     static std::mutex schedulerMutex;  // Add this line
 
     static std::vector<std::shared_ptr<Process>> processList;
     static std::vector<std::shared_ptr<Process>> waitingQueue;
+
+
 
 private:
 

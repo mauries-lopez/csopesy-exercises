@@ -24,6 +24,9 @@ long long MainConsole::batchProcessFreq = 0;
 long long MainConsole::quantumCycles = 0;
 String MainConsole::scheduler = "";
 
+int ScheduleWorker::runningRRProcessCount = 0;
+std::vector<std::shared_ptr<Process>> ScheduleWorker::runningRRProcessList;
+
 std::mutex ScheduleWorker::schedulerMutex;
 
 
@@ -58,11 +61,11 @@ void ScheduleWorker::initialize(int numCores) {
 void ScheduleWorker::addProcess(std::shared_ptr<Process> process) {
     std::lock_guard<std::mutex> lock(schedulerMutex);
 
-    for (const auto& existingProcess : processList) {
-        if (existingProcess->getName() == process->getName()) {
-            return; // to skip adding the duplicate process
-        }
-    }
+    //for (const auto& existingProcess : processList) {
+    //    if (existingProcess->getName() == process->getName()) {
+    //        return; // to skip adding the duplicate process
+    //    }
+    //}
     processList.push_back(process);
 }
 
@@ -74,14 +77,13 @@ void ScheduleWorker::addWaitProcess(std::shared_ptr<Process> process) {
 void ScheduleWorker::scheduleProcess() {
 
     // Pause for a moment (This is necessary so that it will start checking on CPU #0 upon initialized)
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
     //First-Come First Serve Algorithm
     int i = 0;
     while (true) {
 
         if (this->schedulerCurCycle != MainConsole::curClockCycle) {
-            std::lock_guard<std::mutex> lock(schedulerMutex);
             // If all cores are checked, recheck all again.
             if (i == cores.size()) {
                 i = 0;
@@ -119,7 +121,6 @@ void ScheduleWorker::scheduleProcess() {
 void ScheduleWorker::roundRobin(int quantumCycles) {
     // Pause for a moment (This is necessary so that it will start checking on CPU #0 upon initialized)
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
-
     /* Round robin algorithm
     RR Steps:
         1. Assign to runningProcess the process at the top of the ready queue
@@ -136,56 +137,65 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
     // Vector of threads of processes concurrently running
     std::vector<std::thread> rrThreads;
     
-
     while (true) {
         //std::vector<std::thread> rrThreads; // vector of processes to run concurrently
         if (this->schedulerCurCycle != MainConsole::curClockCycle) {
-            while (!processList.empty()) {
-                // If all cores are checked, recheck all again.
-                if (i == cores.size()) {
-                    i = 0;
+
+            if (Process::busyTime == 0) {
+                if (runningRRProcessCount == cores.size()) {
+                    for (int i = 0; i < runningRRProcessList.size(); i++) {
+                        if (runningRRProcessList.at(i).get() != nullptr) {
+                            if (runningRRProcessList.at(i).get()->getCurrentLine() != runningRRProcessList.at(i).get()->getTotalLines()){
+                                ConsoleManager::getInstance()->waitingProcess(runningRRProcessList.at(i).get());
+                                cores[runningRRProcessList.at(i).get()->getCoreAssigned()] = -1;
+                                
+                            }
+                        }
+                    }
+                    usedCores = 0;
+                    runningRRProcessCount = 0;
                 }
-                if (cores[i] == -1) { // Found available core
+            }
+
+            // If all cores are checked, recheck all again.
+            if (i == cores.size()) {
+                i = 0;
+            }
+
+            if (!processList.empty()) {
+                if (cores[i] == -1 && this->runningRRProcessCount < cores.size()) { // Found available core
+                    //std::lock_guard<std::mutex> lock(schedulerMutex);
+
                     // Core assignment
                     coreAssigned = i;
                     // Set core to busy
                     cores[i] = 1;
-                    // Add count of used cores
-                    usedCores++;
 
-                    // RR proper
-                    // Check if process terminated through break (terminated when quantumCycleCounter < quantumCycles)
-                    while (this->quantumCycleCounter < quantumCycles) {
-                        if (!processList.empty()) {
-                            runningProcess = processList.front(); // Assign process at the top of ready queue
-                            processList.erase(processList.begin()); // Pop top of ready queue
-                            // Create thread and push into rrThreads vector ??
-                            std::thread processIncrementLine(&Process::incrementLine, runningProcess, coreAssigned);
-                            processIncrementLine.join();
+                    this->runningRRProcessCount++;
 
-                            //rrThreads.push_back(std::move(processIncrementLine));
-                            //rrThreads.back().detach();
+                    runningProcess = processList.front(); // Assign process at the top of ready queue
+                    runningRRProcessList.push_back(runningProcess);
+                    processList.erase(processList.begin()); // Pop top of ready queue
+                    // Create thread and push into rrThreads vector ??
+                    std::thread processIncrementLine(&Process::incrementLine, runningProcess, coreAssigned);
+                    processIncrementLine.join();
 
-                            // TODO: handling popping in rrThreads vector after process has finished running after
-                            // running for quantumCycles amount of times or currLine == totalLine
-                        }
-                        
-                    }
                     // Process has not finished executing
-                    if (runningProcess->getCurrentLine() < runningProcess->getTotalLines()) {
-                        std::lock_guard<std::mutex> lock(schedulerMutex);
-                        // Move process at the end of ready queue
-                        processList.push_back(runningProcess);
+                    if (runningProcess != nullptr) {
+                        if (runningProcess->getCurrentLine() < runningProcess->getTotalLines()) {
+                            std::lock_guard<std::mutex> lock(schedulerMutex);
+                            // Move process at the end of ready queue
+                            processList.push_back(runningProcess);
+                        }
                     }
-                    // Reset quantumCycleCounter
-                    this->quantumCycleCounter = 0;
-                    // Mark core as available again
-                    cores[i] = -1;
+
+                    // Add count of used cores
+                    //usedCores++;
                 }
-                i++;
-                this->schedulerCurCycle = MainConsole::curClockCycle;
-                Sleep(100);
             }
+            i++;
+            this->schedulerCurCycle = MainConsole::curClockCycle;
+            Sleep(100);
         }
     }
 }
@@ -210,6 +220,9 @@ void ScheduleWorker::testSchedule() {
 
     while (!stopTest) {
         if (ScheduleWorker::schedulerCurCycle != MainConsole::curClockCycle) {
+
+            //std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
             for (long long i = 0; i < createProcessFreq; i++) {
                 time_t currTime;
                 char timeCreation[50];
@@ -226,6 +239,7 @@ void ScheduleWorker::testSchedule() {
                 for (int i = 0; i < MainConsole::processesNameList.size(); i++) {
                     if (processName == MainConsole::processesNameList[i]) {
                         isProcessNameAvailable = false;
+                        break;
                     }
                 }
 
@@ -255,10 +269,14 @@ void ScheduleWorker::testSchedule() {
 
                     // addProcess if there is available core
                     if (testAnyAvailableCore) {
-                        ScheduleWorker::addProcess(process);
+                        if (process != nullptr) {
+                            ScheduleWorker::addProcess(process);
+                        }
                     }
                     else { // add to waiting queue if no available core
-                        ScheduleWorker::addWaitProcess(process);
+                        if (process != nullptr) {
+                            ScheduleWorker::addWaitProcess(process);
+                        }
                     }
 
                     testProcessID++;
@@ -267,9 +285,7 @@ void ScheduleWorker::testSchedule() {
                 else {
                     std::cerr << "Screen name " << processName << " already exists. Please use a different name." << std::endl;
                 }
-                std::this_thread::sleep_for(std::chrono::milliseconds(80));  
             }
-            
         }
     }
     
