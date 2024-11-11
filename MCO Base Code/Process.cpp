@@ -14,9 +14,9 @@ long long MainConsole::delaysPerExec = 0;
 int ScheduleWorker::quantumCycleCounter = 0;
 long long Process::busyTime = MainConsole::delaysPerExec;
 
-Process::Process(const std::string& name, int id, long long totalLines, const std::string& timeCreated, int coreAssigned)
+Process::Process(const std::string& name, int id, long long totalLines, const std::string& timeCreated, int coreAssigned, long long startAddress, long long endAddress)
     : processName(name), processID(id), totalLineOfInstruction(totalLines),
-    currLineOfInstruction(0), timeCreated(timeCreated), coreAssigned(coreAssigned) {}
+    currLineOfInstruction(0), timeCreated(timeCreated), coreAssigned(coreAssigned), startAddress(startAddress), endAddress(endAddress) {}
 
 void Process::incrementLine(int core) {
 

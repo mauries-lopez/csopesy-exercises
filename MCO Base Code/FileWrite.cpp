@@ -1,5 +1,6 @@
 #include "FileWrite.h"
 #include "Process.h"
+#include "MainConsole.h"
 #include <vector> 
 #include <fstream>
 #include <filesystem>
@@ -10,6 +11,9 @@
 #include <string>
 
 namespace fs = std::filesystem;
+
+// Memory
+long long MainConsole::maxOverallMem = 0;
 
 void FileWrite::generateFile(int processID, const std::string& processName, const std::string& timeCreated, const std::vector<std::string>& logs) {
     // Specify the folder path where you want to save the file
@@ -53,7 +57,7 @@ void FileWrite::generateMemorySnapshot(int quantumCycle, const std::vector<Proce
     outFile << "Timestamp: (" << getCurrentTimestamp() << ")\n";
     outFile << "Number of processes in memory: " << processes.size() << "\n";
     outFile << "Total external fragmentation in KB: " << fragmentation / 1024 << "\n";
-    outFile << "\n----end---- = 16384\n";
+    outFile << "\n----end---- = " << MainConsole::maxOverallMem << std::endl;
     for (const auto& process : processes) {
         outFile << process->getEndAddress() << "\n";
         outFile << "P" << process->getID() << "\n";

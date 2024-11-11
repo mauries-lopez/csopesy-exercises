@@ -25,9 +25,9 @@ public:
 	static long long delaysPerExec;
 
 	// First-fit Memory manager
-	//static long long maxOverallMem;
-	//static int memPerFrame;
-	//static long long memPerProcess;
+	static long long maxOverallMem;
+	static int memPerFrame;
+	static long long memPerProcess;
 
 	static std::vector <std::string> processesNameList;
 

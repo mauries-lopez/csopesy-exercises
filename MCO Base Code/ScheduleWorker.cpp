@@ -29,6 +29,11 @@ std::vector<std::shared_ptr<Process>> ScheduleWorker::runningRRProcessList;
 
 std::mutex ScheduleWorker::schedulerMutex;
 
+// Memory
+long long MainConsole::maxOverallMem = 0;
+int MainConsole::memPerFrame = 0;
+long long MainConsole::memPerProcess = 0;
+
 
 ScheduleWorker::ScheduleWorker() {
 
@@ -129,32 +134,32 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
             the top of the ready queue and continue executing from current quantumCycleCounter until quantumCycles
         3. When quantumCycleCounter == quantumCycles
         3.1 If process->currLineOfInstruction < totalLineOfInstruction, move process to the end of ready queue
-        4. Repeat steps (TODO: not implemented yet, probably issue with conditions)
+        4. Repeat steps
     */
     int i = 0;
     this->quantumCycleCounter = 0;
     std::shared_ptr<Process> runningProcess = nullptr;
     // Vector of threads of processes concurrently running
     std::vector<std::thread> rrThreads;
+    //Memory
+    long long currMemAlloc = 0;
     
     while (true) {
         //std::vector<std::thread> rrThreads; // vector of processes to run concurrently
         if (this->schedulerCurCycle != MainConsole::curClockCycle) {
 
-            if (Process::busyTime == 0) {
-                if (runningRRProcessCount == cores.size()) {
-                    for (int i = 0; i < runningRRProcessList.size(); i++) {
-                        if (runningRRProcessList.at(i).get() != nullptr) {
-                            if (runningRRProcessList.at(i).get()->getCurrentLine() != runningRRProcessList.at(i).get()->getTotalLines()){
-                                ConsoleManager::getInstance()->waitingProcess(runningRRProcessList.at(i).get());
-                                cores[runningRRProcessList.at(i).get()->getCoreAssigned()] = -1;
+            if (runningRRProcessCount == cores.size()) {
+                for (int i = 0; i < runningRRProcessList.size(); i++) {
+                    if (runningRRProcessList.at(i).get() != nullptr) {
+                        if (runningRRProcessList.at(i).get()->getCurrentLine() != runningRRProcessList.at(i).get()->getTotalLines()){
+                            ConsoleManager::getInstance()->waitingProcess(runningRRProcessList.at(i).get());
+                            cores[runningRRProcessList.at(i).get()->getCoreAssigned()] = -1;
                                 
-                            }
                         }
                     }
-                    usedCores = 0;
-                    runningRRProcessCount = 0;
                 }
+            usedCores = 0;
+            runningRRProcessCount = 0;
             }
 
             // If all cores are checked, recheck all again.
@@ -171,22 +176,43 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
                     // Set core to busy
                     cores[i] = 1;
 
-                    this->runningRRProcessCount++;
+                    
 
                     runningProcess = processList.front(); // Assign process at the top of ready queue
                     runningRRProcessList.push_back(runningProcess);
                     processList.erase(processList.begin()); // Pop top of ready queue
-                    // Create thread and push into rrThreads vector ??
-                    std::thread processIncrementLine(&Process::incrementLine, runningProcess, coreAssigned);
-                    processIncrementLine.join();
 
-                    // Process has not finished executing
-                    if (runningProcess != nullptr) {
-                        if (runningProcess->getCurrentLine() < runningProcess->getTotalLines()) {
-                            std::lock_guard<std::mutex> lock(schedulerMutex);
-                            // Move process at the end of ready queue
-                            processList.push_back(runningProcess);
+                    // Memory allocation
+                    // Check if not exceeding maximum overall memory
+                    if (currMemAlloc < MainConsole::maxOverallMem) {
+                        this->runningRRProcessCount++;
+                        // Check if previous memory blocks are taken
+
+
+                        // Assign mem-per-proc amount of memory to runningProcess
+                        runningProcess->setMemoryRange(0, MainConsole::memPerProcess); // to change
+
+                        // Update currMemAlloc
+                        currMemAlloc = currMemAlloc + MainConsole::memPerProcess;
+
+                        // Create thread and push into rrThreads vector ??
+                        std::thread processIncrementLine(&Process::incrementLine, runningProcess, coreAssigned);
+                        processIncrementLine.join();
+
+                        // Process has not finished executing
+                        if (runningProcess != nullptr) {
+                            if (runningProcess->getCurrentLine() < runningProcess->getTotalLines()) {
+                                std::lock_guard<std::mutex> lock(schedulerMutex);
+                                // Move process at the end of ready queue
+                                processList.push_back(runningProcess);
+                            }
                         }
+                        // Free allocated memory
+                        currMemAlloc = currMemAlloc - MainConsole::memPerProcess;
+                    }
+                    else { // No memory available, push runningProcess back to processList
+                        // Move process at the end of ready queue
+                        processList.push_back(runningProcess);
                     }
 
                     // Add count of used cores

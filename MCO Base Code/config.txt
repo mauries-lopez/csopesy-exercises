@@ -5,3 +5,6 @@ quantum-cycles 4
 max-ins 100
 scheduler "rr"
 num-cpu 2
+max-overall-mem 16384
+mem-per-frame 16
+mem-per-proc 4096
