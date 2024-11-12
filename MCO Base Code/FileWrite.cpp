@@ -12,9 +12,6 @@
 
 namespace fs = std::filesystem;
 
-// Memory
-long long MainConsole::maxOverallMem = 0;
-
 void FileWrite::generateFile(int processID, const std::string& processName, const std::string& timeCreated, const std::vector<std::string>& logs) {
     // Specify the folder path where you want to save the file
     std::string folderPath = fs::current_path().string();  // Change this to the desired location
@@ -59,9 +56,9 @@ void FileWrite::generateMemorySnapshot(int quantumCycle, const std::vector<Proce
     outFile << "Total external fragmentation in KB: " << fragmentation / 1024 << "\n";
     outFile << "\n----end---- = " << MainConsole::maxOverallMem << std::endl;
     for (const auto& process : processes) {
-        outFile << process->getEndAddress() << "\n";
-        outFile << "P" << process->getID() << "\n";
         outFile << process->getStartAddress() << "\n";
+        outFile << "P" << process->getID() << "\n";
+        outFile << process->getEndAddress() << "\n";
     }
     outFile << "\n----start---- = 0\n";
     outFile.close();

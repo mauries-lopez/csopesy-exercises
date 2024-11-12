@@ -9,6 +9,7 @@
 #include <mutex>
 #include <ctime>
 #include <vector>
+#include "MemoryManager.h"
 
 long long MainConsole::delaysPerExec = 0;
 int ScheduleWorker::quantumCycleCounter = 0;
@@ -58,9 +59,9 @@ void Process::incrementLine(int core) {
                             currLineOfInstruction++;
                         }
                         else if (MainConsole::scheduler == "rr") {
+
                             ScheduleWorker::usedCores++;
                             for (int i = 0; i < MainConsole::quantumCycles; i++) {
-                                //ScheduleWorker::quantumCycleCounter++;
                                 if (currLineOfInstruction >= totalLineOfInstruction) {
                                     break;
                                 }
@@ -68,6 +69,9 @@ void Process::incrementLine(int core) {
                                     currLineOfInstruction++;
                                 }
                             }
+
+                            generateMemorySnapshot(ScheduleWorker::quantumCycleCounter);
+                            ScheduleWorker::quantumCycleCounter++;
                             break;
                         }
                         this->processCurCycle = MainConsole::curClockCycle;
@@ -138,4 +142,29 @@ void Process::generateMemorySnapshot(int quantumCycle) {
     }
     int externalFragmentation = ConsoleManager::getInstance()->calculateExternalFragmentation(ConsoleManager::MAX_MEMORY);
     FileWrite::generateMemorySnapshot(quantumCycle, processesInMemory, externalFragmentation);
+}
+
+void Process::setMemoryRange(long long start, int memoryBlockLoc) {
+
+    if (this != nullptr) {
+        this->memoryBlockLoc = memoryBlockLoc;
+        storedStartAddress = start;
+        startAddress = start;
+        endAddress = (startAddress - MainConsole::memPerProcess);
+        storedEndAddress = endAddress;
+
+        for (int i = 0; i < MemoryManager::memoryBlocks.size(); i++) {
+            if (MemoryManager::memoryBlocks.at(i) == endAddress) {
+                MemoryManager::memoryBlocks.at(i) = -1;
+                break;
+            }
+        }
+        for (int i = 0; i < MemoryManager::memoryBlocks.size(); i++) {
+            
+            std::cerr << MemoryManager::memoryBlocks.at(i) << std::endl;
+     
+        }
+
+    }
+
 }

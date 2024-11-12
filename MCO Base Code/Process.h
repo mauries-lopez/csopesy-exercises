@@ -41,11 +41,11 @@ public:
     long long getEndAddress() const { return endAddress; }
     long long getStartAddress() const { return startAddress; }
     // Setter for start and end address
-    void setMemoryRange(long long start, long long end) {
-        startAddress = start;
-        endAddress = end;
-    }
+    void setMemoryRange(long long start, int memoryBlockLoc);
 
+    int memoryBlockLoc;
+    long long storedStartAddress;
+    long long storedEndAddress;
     long long startAddress;
     long long endAddress;
     static long long busyTime;

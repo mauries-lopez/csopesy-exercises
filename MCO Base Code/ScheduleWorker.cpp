@@ -8,6 +8,7 @@
 #include "MainConsole.h"
 #include <random>
 #include <condition_variable>
+#include "MemoryManager.h"
 
 using namespace std;
 
@@ -143,6 +144,7 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
     std::vector<std::thread> rrThreads;
     //Memory
     long long currMemAlloc = 0;
+    int memoryBlockLoc = 0;
     
     while (true) {
         //std::vector<std::thread> rrThreads; // vector of processes to run concurrently
@@ -154,12 +156,14 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
                         if (runningRRProcessList.at(i).get()->getCurrentLine() != runningRRProcessList.at(i).get()->getTotalLines()){
                             ConsoleManager::getInstance()->waitingProcess(runningRRProcessList.at(i).get());
                             cores[runningRRProcessList.at(i).get()->getCoreAssigned()] = -1;
-                                
+                           
                         }
                     }
                 }
-            usedCores = 0;
-            runningRRProcessCount = 0;
+                MemoryManager::prepareMemoryBlocks();
+
+                usedCores = 0;
+                runningRRProcessCount = 0;
             }
 
             // If all cores are checked, recheck all again.
@@ -176,8 +180,6 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
                     // Set core to busy
                     cores[i] = 1;
 
-                    
-
                     runningProcess = processList.front(); // Assign process at the top of ready queue
                     runningRRProcessList.push_back(runningProcess);
                     processList.erase(processList.begin()); // Pop top of ready queue
@@ -187,10 +189,21 @@ void ScheduleWorker::roundRobin(int quantumCycles) {
                     if (currMemAlloc < MainConsole::maxOverallMem) {
                         this->runningRRProcessCount++;
                         // Check if previous memory blocks are taken
-
+                        long long availableMemBlockAddr = 0.0;
+                        
+                        for (int i = 0; i < MemoryManager::memoryBlocks.size(); i++) {
+                            if (MemoryManager::memoryBlocks.at(i) != -1) {
+                                availableMemBlockAddr = MemoryManager::memoryBlocks.at(i);
+                                MemoryManager::memoryBlocks.at(i) = -1;
+                                memoryBlockLoc = i;
+                                break;
+                            }
+                        }
 
                         // Assign mem-per-proc amount of memory to runningProcess
-                        runningProcess->setMemoryRange(0, MainConsole::memPerProcess); // to change
+                        if (availableMemBlockAddr != 0) {
+                            runningProcess->setMemoryRange(availableMemBlockAddr, memoryBlockLoc); // to change
+                        }
 
                         // Update currMemAlloc
                         currMemAlloc = currMemAlloc + MainConsole::memPerProcess;
