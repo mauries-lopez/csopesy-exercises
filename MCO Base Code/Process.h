@@ -9,7 +9,7 @@
 class Process {
 public:
     // Constructor to initialize the process with a name, ID, total lines of instruction, and time created
-    Process(const std::string& name, int id, long long totalLines, const std::string& timeCreated, int coreAssigned = 5); // Core assignment default 5 for when no core is assigned
+    Process(const std::string& name, int id, long long totalLines, const std::string& timeCreated, int coreAssigned = 5, long long startAddress = 0, long long endAddress = 0); // Core assignment default 5 for when no core is assigned ; startAddress and endAddress default 0
     ~Process() = default;
 
     // Method to check if the process is finished
@@ -33,8 +33,22 @@ public:
     // Setter for core
     void setCoreAssigned(int core) { coreAssigned = core; };
 
-    Process* getProcessByName(const std::string& processName) const;
+    //Process* getProcessByName(const std::string& processName) const;
     void processSMI() const;
+
+    // Generate memory snapshot file at quantum cycle
+    static void generateMemorySnapshot(int quantumCycle);
+    long long getEndAddress() const { return endAddress; }
+    long long getStartAddress() const { return startAddress; }
+    // Setter for start and end address
+    void setMemoryRange(long long start, int memoryBlockLoc);
+
+    int memoryBlockLoc;
+    long long storedStartAddress;
+    long long storedEndAddress;
+    long long startAddress;
+    long long endAddress;
+    static long long busyTime;
 
 private:
     int processCurCycle;
@@ -50,4 +64,6 @@ private:
 
     // Instance of ScheduleWorker
     //ScheduleWorker* scheduleWorker;
+
+             
 };

@@ -4,6 +4,7 @@
 #include <deque>
 #include "Process.h" 
 #include <mutex>  // Add this include to use std::mutex
+#include <condition_variable>
 
 
 class ScheduleWorker {
@@ -27,15 +28,24 @@ public:
     static void testSchedule();
     static int schedulerCurCycle;
 
+    // cycle counter for RR
+    static int quantumCycleCounter;
+    static int runningRRProcessCount;
+    static std::vector<std::shared_ptr<Process>> runningRRProcessList;
+
     static bool stopTest;
     static std::mutex schedulerMutex;  // Add this line
 
     static std::vector<std::shared_ptr<Process>> processList;
     static std::vector<std::shared_ptr<Process>> waitingQueue;
 
+
+
 private:
 
     void initializeCores(int numCores);
-    
+    std::condition_variable cv;
+    std::mutex concurrentThread;
+    int rrThreadsSize = 0;
 
 };

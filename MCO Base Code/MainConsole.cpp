@@ -10,6 +10,8 @@
 #include <thread>
 #include <fstream>
 #include <random>
+#include "MemoryManager.h"
+
 
 using namespace std; //To not specify the prefix (std::<syntax>)
 
@@ -193,7 +195,20 @@ void MainConsole::process() {
                         isInitialized = false;
                     }
                 }
+                else if (parameter == "max-overall-mem") {
+                    this->maxOverallMem = std::stoll(value);
+                }
+                else if (parameter == "mem-per-frame") {
+                    this->memPerFrame = std::stoi(value);
+                }
+                else if (parameter == "mem-per-proc") {
+                    this->memPerProcess = std::stoll(value);
+                }
             }
+
+            MemoryManager memoryManager(this->maxOverallMem);
+            memoryManager.prepareMemoryBlocks();
+
             //std::cout << this->batchProcessFreq << std::endl;
             //std::cout << this->delaysPerExec << std::endl;
             //std::cout << this->maximumIns << std::endl;
