@@ -159,11 +159,11 @@ void Process::setMemoryRange(long long start, int memoryBlockLoc) {
                 break;
             }
         }
-        for (int i = 0; i < MemoryManager::memoryBlocks.size(); i++) {
-            
-            std::cerr << MemoryManager::memoryBlocks.at(i) << std::endl;
+        //for (int i = 0; i < MemoryManager::memoryBlocks.size(); i++) {
+        //    
+        //    std::cerr << MemoryManager::memoryBlocks.at(i) << std::endl;
      
-        }
+        //}
 
     }
 
